@@ -1,19 +1,5 @@
----
-title: "blah"
----
-
 language
 ========
-
-## It should
-
-
-# Syntax
-
-
-
-lang
-======
 
 Comfort of a shell, power of a language
 
