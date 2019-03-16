@@ -40,7 +40,7 @@ and the value will always be 'Jane'
 
 In other words when assigning values to a `type`, those values are immutable.
 
-### Instantiating
+## Instantiating
 
 When you declare a `type` you're actually declaring a function.
 
@@ -55,10 +55,10 @@ parameter. Meaning that to "instantiate" a person, you call the function just
 like any other function.
 
 ```
-// non strict
+// non explicit
 developer = person { 'Jane' }
 
-// or strict
+// explicit
 developer = person { first:'Jane' }
 ```
 
@@ -72,7 +72,7 @@ easy_as = abc 1 2 3
 => abc { a:1, b:2, c:3 }
 ```
 
-#### Functions everywhere (macros?)
+## Functions everywhere
 
 You can leverage the functional nature of _lang_ to create types on the fly as
 well
@@ -96,7 +96,7 @@ stdout user
 // => user { first:'Bobby', last: 'Sue' }
 ```
 
-#### Mutability
+## Mutability
 
 Structures are basically just `types` but you're declaring and instantiating
 them at the same time. 
@@ -127,7 +127,7 @@ returns one that isn't
 
 Which is what that `mut` function is doing there in last example
 
-#### ... and that let's you control strictness at the time you want to control it
+## Ad-hoc Immutability
 
 ```
 // At this point we don't know what we want to lock down
@@ -154,10 +154,10 @@ data.truth = 4
 => Compile error: The type `data` shouldn't have its field `truth` ....
 ```
 
-### Self referencing
+## Self referencing
 
-Sometimes you want to access the thing you're declaring while you're declaring
-it, so _lang_ should have support for that
+Things get real spicy when you want to access the thing you're declaring while
+you're declaring it, so _lang_ should have support for that
 
 ```
 data = type { 

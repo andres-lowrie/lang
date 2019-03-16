@@ -13,24 +13,29 @@ The synax is:
 { ...grammar.expression }
 ```
 
-#### Forms of blocks...down the rabbit hole
+## Forms of blocks...down the rabbit hole
 
-They're 2 forms of blocks. [body]() blocks like the kind you see in function
-declarations
+They're 2 forms of blocks.
+
+_body blocks_ like the kind you see in function declarations
 
 ```
 fn -> { // body block}
 ```
 
-and [type]() blocks like those you see in type declarations
+_type blocks_ like those you see in type declarations
 
 ```
 t = type { field: type}
 ```
 
-Context is what determines the different forms of blocks. _lang_ will default to
-_body block_ when the context is ambiguous
+Context is what determines the different forms of blocks.
 
+### Body by default
+
+_lang_ will default to
+_body block_ when the context is ambiguous
+ 
 For example
 
 ```
@@ -57,7 +62,7 @@ This is the case if there's no assigment as well:
 
 This is just as ambiguous as the one with the assignment
 
-#### The magical comma
+### The magical comma
 
 When the compiler sees a comma after an expression followed by another
 expression (as long as it's not the last expression) then it's a safe bet that a
@@ -67,7 +72,7 @@ _type block_ is being declared
 {
   x:int,
   y:int,
-  z:int,
+  z:int
 }
 ```
 
@@ -81,7 +86,7 @@ means that the function is returning multiple things
 {
   x:int,
   y:int,
-  z:int, all:point //<= That means this is a function and therefore a body block
+  z:int, all:point //<= That means this is a function and therefore this should be body block
 }
 ```
 
@@ -100,7 +105,7 @@ and pick body block
 ```
 
 
-#### The assignment operator
+### The assignment operator
 
 Using the assignment operator `=` in a body can also provide context to the
 compiler.
@@ -138,7 +143,7 @@ y = type x
 // Compile error: Incorrect block type. The function `type` doesn't allow ....
 ```
 
-#### Lock it down
+## Lock it down
 
 If you pass a block to a function that declares what type of block it wants,
 then _lang_ won't do any guessing and instead do compile checking

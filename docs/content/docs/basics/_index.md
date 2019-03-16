@@ -4,9 +4,7 @@ weight: 1
 
 # Built in types
 
-## Primitive Types
-
-### Numbers
+## Numbers
 
 They should work as expected and the compiler should do the work of figuring out
 what type you intended
@@ -21,7 +19,7 @@ what type you intended
 50:double => Double
 ```
 
-### String
+## String
 
 
 Single, Double, or use back-ticks for literal
@@ -50,10 +48,49 @@ escape `Some string that's a 'mix' of "strings"`
 -> `Some string that\'s a \'mix\' of \"strings\"`
 ```
 
-### Booleans
+## Booleans
 
 ```
 true => true
 false => false
 ```
 
+## Operators
+
+### The usual suspects
+
+```
++ => add 
+- => substract
+/ => divide
+* => multiply
+% => modulo
+^ => power
+```
+
+### Conditional
+
+there's the more declarative ones as well
+
+```
+not => true when false
+or  => true when either
+and => true when both
+```
+
+## Comments
+
+There's only the double forward slash
+
+```
+// This is it
+```
+
+There isn't a block comment. I would venture a guess that most editors these
+days have a shortcut to prefix a line with comments anyway
+
+```
+// No block
+// comments
+// just double slash
+```

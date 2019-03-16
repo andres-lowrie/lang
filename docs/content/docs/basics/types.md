@@ -4,7 +4,7 @@ weight: 3
 
 # Built-in Types
 
-### Lists
+## Lists
 
 A list can hold stuff.
 
@@ -28,7 +28,7 @@ collection:list:int = [1, 2, "boo"]
 // => Compile error: The list 'collection' can only have 'int' ....
 ```
 
-### Structures
+## Structures
 
 The structures in _lang_ are basically JSON
 
@@ -67,7 +67,7 @@ data = {
 
 This will add `pi` with the float value of `3.14` to `data` structure
 
-#### Shorthands
+### Shorthand
 
 You can pass in variables and the structure will be assigned key:value pairs
 using the variable name and value

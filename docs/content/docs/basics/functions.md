@@ -4,7 +4,9 @@ weight: 5
 
 # Functions
 
-### Just a variable
+In _lang_ everything is a function and they're everywhere
+
+## Declaring
 
 There's no `keyword` for declaring functions; they're treated like any other
 variable. Instead the compiler will look at the declaration and determine that
@@ -13,16 +15,14 @@ the variable you assigned is of the function type.
 The syntax is
 
 ```
-function_name = parameters -> body
+function_name = parameters ... -> body
 function_name -> body
 ```
 
-### Basics
-
-#### The thin arrow
+### The thin arrow
 
 There isn't a whole bunch of ceremony to declaring functions: the only thing you
-really need is the _thin_ arrow and the assignment operator
+really need is the _thin arrow_ and an assignment operator
 
 ```
 add = a b -> {
@@ -30,11 +30,41 @@ add = a b -> {
 }
 ```
 
-This tells the compiler that the left side of the arrows are parameters and the
+This tells the compiler that the left side of the arrow are parameters and the
 right side of the arrow is the body.
 
-The return is implicit as in the last expression will be returned, but you can
-also use the `return` keyword if you like
+a function can be declared to take 0 or any number of parameters
+
+```
+// None
+add = () -> {}
+
+// 1
+add = a -> {}
+
+// Many
+add = a b -> {}
+add = a b c -> {}
+
+// 3 defined, and the rest into a list
+// _lang_ calls this "variadic params"
+add = a b c ...d -> {}
+```
+
+More info on <a ref="#spread">variadic params</a>
+
+
+### Returning
+
+The return is implicit as in the last expression will be returned,
+
+```
+add = a b -> {
+  a + b
+}
+```
+
+but you can also use the `return` keyword if you like
 
 ```
 add = a b -> {
@@ -42,26 +72,26 @@ add = a b -> {
 }
 ```
 
-#### Types
+### Types
 
 You can crank up the strictness as well
 
 ```
-// Explicit return but lax parameters
+// Strict return but lax parameters
 add = a b -> int {
   a + b
 }
 
-// Explicit parameters but lax return
+// Strict parameters but lax return
 add = a:int b:int -> a + b
 
-// Full explicitness
+// Full strictness
 add = a:int b:int -> int {
-   a + b
+   return a + b
 }
 ```
 
-#### Multiple returns
+### Multiple returns
 
 Functions can return multiple things instead of just one thing.
 To do this, you have to use the 
@@ -83,24 +113,28 @@ name -> string, string {
 }
 ```
 
-#### Shorthand
+## Shorthand
 
 Ergonomics are important
 
-You can declare functions that don't take any parameters:
+You can assign functions that don't take any parameters explicity (see
+<a>declaring</a>)  or use the shorthand
 
 ```
-add = -> {}
-
-// But that equal sign looks weird, so you can leave it out
-add -> {}
+give_a -> { "a" }
 ```
 
 The _brackets_ are completly optional when not specifying a return type:
 
 ```
+give_a -> 'a'
+```
+
+You can loose the brackets all together if you want
+
+```
 // No params
-show_a -> 'a'
+give_a -> 'a'
 
 // Some params
 add = a b -> a + b
@@ -116,7 +150,10 @@ add = a b c d e f g h i j ->
   + h + i + j
 ```
 
-Functions with multiple retuns can also be one liners
+You only need the `=` operator when your function takes parameters.
+
+You can use shorthand form for functions with multiple retuns can also be one
+liners
 
 ```
 yes_no = true, false
@@ -128,13 +165,23 @@ of the thin arrow if you don't specify one.
 The only time you're required to specify one (body block) is when you want to be
 explicit about the return of a function
 
-#### Lambdas
+## Lambdas
 
 You can also create an anonymous function (as in a function that is not
 assigned to a variable), you just have to surround your function with parenthesis
 
+The syntax is:
+
 ```
-say = something -> print something
+(params -> return body)
+```
+
+where `params` and `return` are optional.
+
+For example
+
+```
+say = something -> stdout something
 
 say (-> "Hello World")
 ```
@@ -159,9 +206,9 @@ add (-> 2, 4)
 // => 4
 ```
 
-### Calling a function
+## Calling a function
 
-Just as with declaration, calling a function has no ceremony it's:
+Just as with declaration, calling a function has no ceremony, it's:
 
 ```
 function_name arg1 arg2 argN ...
@@ -179,10 +226,10 @@ add 2 2
 By default _lang_ will call your function when it appears anywhere (except when
 it's being declared, or passed as parameters)
 
-### Parameters
+### Parameter magic
 
-By default _lang_ will allow you to pass anything into a function regardless of
-the "arity" of your function
+You can actually pass anything into a function regardless of the "arity" of your
+function, _lang_ will make the best of it
 
 For example
 
@@ -199,10 +246,10 @@ noop 1 2 3
 // => Nothing
 ```
 
-#### Auto "rest" params
+_lang_ calls this "auto rest"
 
-By default, _lang_ will accept any _extra_ parameters passed into a
-function and assign them to the [list]() variable `args` in your function body
+Basically _lang_ will accept any _extra_ parameters passed into a
+function and assign them to the <a ref="">list</a> variable `args` in your function body
 
 ```
 add -> {
@@ -223,24 +270,16 @@ add ...nums -> {
 }
 ```
 
-You can also declare function that take both positional and variadic parameters
-
-```
-add = a b ...others -> {
-  // do something
-}
-```
-
 Of course you can increase the strictness and specifically say "no, you take
 no parameters dammit"
 
 ```
-coinfig.no.rest_params {
+coinfig.no.auto_rest {
   add = () -> {}
 }
 ```
 
-#### Spread
+### Spread
 
 You can also "spread out" a list when calling a function by sending each item in
 a list to the function as a separate parameter
@@ -254,12 +293,12 @@ add ...stuff
 => 6
 ```
 
-### Functional
+## Functional
 
 At it's core, _lang_ is a functional language meaning that certain features
 available to other functional languages are baked in
 
-#### First-class citizens
+### First-class citizens
 
 Pass them anywhere
 
@@ -273,7 +312,7 @@ n -> rand 1 10
 add n 4
 ```
 
-Return them in other functions
+Return them and declare them in other functions
 
 ```
 add = a b -> a + b
@@ -285,7 +324,7 @@ add2Sub3 1
 => 0
 ```
 
-On the fly
+On the fly...
 
 ```
 add = a b -> a + b
@@ -293,14 +332,12 @@ add = a b -> a + b
 add (rand 1 10) 4
 ```
 
+### Auto curry / partial application
 
-#### Auto curry / partial application
-
-Just as how when you pass [extra]() parameters to a function _lang_ does you a
-solid and presents them to you in your function
-
-If you pass a function "less" parameters than it expected, _lang_ will
-automatically create a partially applied function
+Just as how when you pass "extra" parameters to a function and _lang_ does you a
+solid and presents them to you in your function, you pass a function "less"
+parameters than it expected, _lang_ will automatically create a partially
+applied function for you
 
 ```
 add = a b -> a + b

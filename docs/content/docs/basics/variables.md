@@ -4,7 +4,7 @@ weight: 2
 
 # Variables
 
-## Basics
+## Assignment
 
 Very little ceremony when it comes to variable assigning
 
@@ -21,7 +21,7 @@ Basically it's
 anything = anything
 ```
 
-_lang_ will infer types for you but you tell it what they should be if you like
+_lang_ will infer types by default, but you always get the last word
 
 ```
 foo:int = 42
@@ -36,11 +36,11 @@ foo:int
 
 but why would you want to?...that's the real question
 
-### Destructuring
+## Destructuring
 
-You can also destructure types and functions
+You can also destructure stuff
 
-#### Structures
+### Structures
 
 When pulling out variables from a structure, you need to name the variables the
 same thing they're named in the structure
@@ -61,7 +61,7 @@ a, c = data
 
 ```
 
-#### Lists
+### Lists
 
 When destructuring lists however, you can name the variables anything you want
 
@@ -89,7 +89,7 @@ a, b , c, ...rest = data
 // => rest [4, 5, 6, 7]
 ```
 
-#### Functions
+### Functions
 
 If a function returns multiple things you can assign results to
 multiple variables
