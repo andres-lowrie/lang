@@ -1,3 +1,7 @@
+---
+weight: 5
+---
+
 # Functions
 
 ### Just a variable

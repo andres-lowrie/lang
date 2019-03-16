@@ -1,3 +1,7 @@
+---
+weight: 6
+---
+
 # Blocks
 
 These are the most magical pieces of _lang_ since this syntax is used everywhere

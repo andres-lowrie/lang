@@ -1,3 +1,7 @@
+---
+weight: 4
+---
+
 # Types
 
 ## Declaring
