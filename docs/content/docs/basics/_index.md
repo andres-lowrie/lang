@@ -1,5 +1,6 @@
 ---
 weight: 1
+title: "Basics"
 ---
 
 # Built in types
@@ -66,16 +67,7 @@ false => false
 * => multiply
 % => modulo
 ^ => power
-```
-
-### Conditional
-
-there's the more declarative ones as well
-
-```
-not => true when false
-or  => true when either
-and => true when both
+! => not
 ```
 
 ## Comments

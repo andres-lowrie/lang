@@ -4,8 +4,8 @@ weight: 6
 
 # Blocks
 
-These are the most magical pieces of _lang_ since this syntax is used everywhere
-and the compiler uses context to determine types
+These are the most magical pieces of _lang_ (excluding the hacking part) since
+this syntax is used everywhere and the compiler uses context to determine types
 
 The synax is:
 

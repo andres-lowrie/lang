@@ -2,7 +2,8 @@
 weight: 4
 ---
 
-# Types
+# Custom Types
+
 
 ## Declaring
 
@@ -172,4 +173,63 @@ d = data { 'Jane', 'Doe'}
 d.name
 
 => 'Jane Doe'
+```
+
+## Embedding
+
+You can also embed structures within structures and keep references to the
+original structure
+
+```
+gun = { damage: 'high' }
+knife = { damage: 'med' }
+fist = { damage: 'low }
+
+weapons = { main: gun, secondary: knife, aux: fist }
+
+// Structures and are mutable by default
+
+train = a -> a.damage = 'high'
+
+train fist
+
+dump weapons
+// => weapons {
+// =>   main: gun {
+// =>     damage: 'high'
+// =>   },
+// =>   secondary: knife {
+// =>     damage: 'med'
+// =>   },
+// =>   aux: fist {
+// =>     damage: 'high'
+// =>   },
+// => }
+```
+
+If you don't want references you can `copy` structures instead
+
+```
+x = { foo: 'bar' }
+
+y = { x: copy x }
+y.x = 'not bar'
+
+stdout x y
+// => x { foo: 'bar' }
+// => y { foo: 'not bar' }
+```
+
+You can invert the default behavior natrually with 
+
+```
+config.struct_embed_use_copy {
+  // ...
+}
+
+// Or
+
+config.no.struct_embed {
+  // ...
+}
 ```

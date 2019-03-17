@@ -372,4 +372,66 @@ config.no.auto_curry {
 Like everything else, you can disable auto curry via the [config]() if you like
 ... but you don't want to do that. :wink:
 
+### Auto infix
+
+Just about everything in _lang_ is a function, including most operators
+
+For example the operator `+` is actually defined like this
+
+```
+add = a:num, b:num -> a + b
++ = add
+```
+
+Meaning that `+` is actually a function and thus the following two expressions
+are equivalent
+
+```
+// Called like any other function
++ 1 1
+
+// Called in "infix" position
+1 + 1
+```
+
+_lang_ will automatically guess if your function is in infix position based on
+the context of the parser
+
+You can explicity tell the parser that a function is in infix position by using
+the infix operator which is `<function_name>` for example
+
+```
+// Let the parser guess at positioning
+1 + 1
+
+// Tell the parser explicity that `+` is in infix position
+1 <+> 1
+```
+
+#### Order of operations / precedence
+
+Examples of auto_infix and alternatives
+
+```
+// The following is using the `divide` and `plus` function in infix position
+4 / 4 + 4
+// => 5
+
+// You could could be explicit if you liked to
+4 </> 4 <+> 4
+// => 5
+
+// Or you can do it without infix
++ 4 (/ 4 4)
+```
+
+#### With examples `auto_curry`
+
+Examples of auto_infix and auto_curry working hand and hand
+
+```
+x = 4 / 
+result = x 4
+// => 1
+```
 

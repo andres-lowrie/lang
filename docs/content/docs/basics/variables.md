@@ -21,24 +21,51 @@ Basically it's
 anything = anything
 ```
 
-_lang_ will infer types by default, but you always get the last word
-
-```
-foo:int = 42
-```
-
 If you want to declare variables and not assign them a value... you're allowed
 to do that ...
-
 ```
 foo:int
 ```
 
 but why would you want to?...that's the real question
 
+## Strictness
+
+_lang_ will infer types by default, but you always get the last word
+
+```
+foo:int = 42
+```
+
+You can also negate types, as in "this variable can be anything except a `type`"
+
+```
+foo:!int
+```
+
+You can also set a strict type... dynamically
+
+```
+a -> 1
+
+foo:a
+```
+
 ## Destructuring
 
 You can also destructure stuff
+
+### Pattern match style
+
+Match things on the left side of the `=` with things from the right
+
+```
+a, b, c = 1 2 3
+
+// or 
+
+a, b, c = 'a' 'b' 'c'
+```
 
 ### Structures
 
