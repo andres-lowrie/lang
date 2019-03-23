@@ -5,7 +5,7 @@ title: Expressiveness
 
 # Expressiveness
 
-Being able to "just declare and express" things is a staple of _lang_ 
+Being able to "just declare and express" things is a staple of _lang_
 
 ## Assign if empty
 
@@ -60,7 +60,7 @@ person.pick_weapon = w -> find w person.weapons
 ```
 
 The dot operator will let you create structures on the fly as well by omitting
-the brackets
+the braces
 
 ```
 person.name = 'James Bond'

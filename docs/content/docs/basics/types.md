@@ -10,9 +10,23 @@ There are 3 forms of types: the "type actual" which refer to built-in types,
 the `type` function (see <a>Custom Type </a>), and the "interface" type (see
 <a>Interface</a>)
 
+## Defining types
+
+Syntax is
+
+```
+binding_name : <type> ...
+```
+
+## Runtime type binding
+
+Anything can be a type
+
+## Built-In
+
 This page defines the built-in type
 
-## primitives
+### primitives
 
 ```
 int   => 
@@ -23,7 +37,7 @@ list  => list
 
 There's also collection types
 
-## Lists
+### Lists
 
 A list can hold stuff.
 
@@ -47,7 +61,7 @@ collection:list:int = [1, 2, "boo"]
 // => Compile error: The list 'collection' can only have 'int' ....
 ```
 
-### Index access
+#### Index access
 
 You can access an item in a list via an index as you would suspect
 
@@ -73,7 +87,7 @@ collection[-2]
 => 2
 ```
 
-### Slice and dice
+#### Slice and dice
 
 You can also slice up a lists using the `:`
 
@@ -103,7 +117,7 @@ config.exclusive_slice {
 }
 ```
 
-### Ranges
+#### Ranges
 
 You can also define lists via a ranage syntax
 
@@ -112,7 +126,7 @@ collection = [1..99]
 // => [1, 2, 3 .. 99]
 ```
 
-### Functions
+#### Functions
 
 _lang_ ships with some functions that make accessing list memebers more
 declarative
@@ -150,7 +164,7 @@ head, tail... = [1, 2, 3, 4]
 ```
 
 
-## Structures
+### Structures
 
 The structures in _lang_ are basically JSON
 
@@ -189,7 +203,7 @@ data = {
 
 This will add `pi` with the float value of `3.14` to `data` structure
 
-### Shorthand
+#### Shorthand
 
 You can pass in variables and the structure will be assigned key:value pairs
 using the variable name and value

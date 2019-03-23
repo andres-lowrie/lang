@@ -166,8 +166,8 @@ if false {
 }
 ```
 
-This works because `else` is leveraging the parser here will slurp up everything
-passed to it until it reaches something that's not a `else** statement
+This works because `else` is leveraging the parser here and will slurp up everything
+passed to it until it reaches an `else` statement
 
 ## Well, I like `elif`
 

@@ -94,7 +94,6 @@ add = a:int b:int -> int {
 ### Multiple returns
 
 Functions can return multiple things instead of just one thing.
-To do this, you have to use the 
 
 ```
 name -> {
@@ -117,20 +116,20 @@ name -> string, string {
 
 Ergonomics are important
 
-You can assign functions that don't take any parameters explicity (see
-<a>declaring</a>)  or use the shorthand
+You only need the `=` operator when your function takes parameters.
 
 ```
+// Takes no parameters so no `=` is needed
 give_a -> { "a" }
 ```
 
-The _brackets_ are completly optional when not specifying a return type:
+The _braces_ are completly optional when not specifying a return type:
 
 ```
 give_a -> 'a'
 ```
 
-You can loose the brackets all together if you want
+You can loose the braces all together if you want
 
 ```
 // No params
@@ -150,17 +149,14 @@ add = a b c d e f g h i j ->
   + h + i + j
 ```
 
-You only need the `=` operator when your function takes parameters.
-
-You can use shorthand form for functions with multiple retuns can also be one
-liners
+You can use shorthand form for functions with multiple retuns as well:
 
 ```
-yes_no = true, false
+yes_no -> true, false
 ```
 
-The compiler will create a [body block]() around anything on the right hand side
-of the thin arrow if you don't specify one.
+By default, the compiler will create a [body block]() around anything on the
+right hand side of the thin arrow if you don't specify one.
 
 The only time you're required to specify one (body block) is when you want to be
 explicit about the return of a function
@@ -199,11 +195,11 @@ sum = fold (acc i -> acc + i) nums
 You can also have lambdas with multiple retuns
 
 ```
-add a b -> a + b
+add = a b -> a + b
 
 add (-> 2, 4)
 
-// => 4
+// => 6
 ```
 
 ## Calling a function
@@ -217,14 +213,11 @@ function_name arg1 arg2 argN ...
 For example
 
 ```
-add a b -> a + b
+add = a b -> a + b
 
 add 2 2
 => 4
 ```
-
-By default _lang_ will call your function when it appears anywhere (except when
-it's being declared, or passed as parameters)
 
 ### Parameter magic
 
@@ -264,7 +257,7 @@ If you want to assign another name to `args` you can do either it via [config]()
 or when you declare your function using the variadic syntax
 
 ```
-add ...nums -> {
+add = ...nums -> {
   // The compiler will assign args to nums in this case
   // nums = args
 }
@@ -296,9 +289,9 @@ add ...stuff
 ## Functional
 
 At it's core, _lang_ is a functional language meaning that certain features
-available to other functional languages are baked in
+are baked in
 
-### First-class citizens
+### Function are first-class citizens
 
 Pass them anywhere
 
@@ -311,6 +304,7 @@ n -> rand 1 10
 
 add n 4
 ```
+
 
 Return them and declare them in other functions
 
@@ -410,28 +404,28 @@ the infix operator which is `<function_name>` for example
 
 #### Order of operations / precedence
 
-Examples of auto_infix and alternatives
+Examples of auto\_infix and alternatives
 
 ```
 // The following is using the `divide` and `plus` function in infix position
 4 / 4 + 4
 // => 5
 
-// You could could be explicit if you liked to
+// You could be explicit if you liked to
 4 </> 4 <+> 4
 // => 5
 
 // Or you can do it without infix
 + 4 (/ 4 4)
+// => 5
 ```
 
 #### With examples `auto_curry`
 
-Examples of auto_infix and auto_curry working hand and hand
+Examples of auto\_infix and auto\_curry working hand and hand
 
 ```
-x = 4 / 
+x = 4 /
 result = x 4
 // => 1
 ```
-
