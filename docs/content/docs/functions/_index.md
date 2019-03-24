@@ -1,5 +1,6 @@
 ---
-weight: 5
+weight: 2
+title: Functions
 ---
 
 # Functions
