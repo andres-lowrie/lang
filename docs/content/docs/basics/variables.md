@@ -11,7 +11,7 @@ Very little ceremony when it comes to variable assigning
 ```
 foo = 1             => foo is the number 1
 foo = 'something'   => foo is the string 'something'
-foo = { bar: 'bas'} => foo is a type
+foo = { bar: 'bas'} => foo is a structure
 foo = a b -> a + b  => foo is a function
 ```
 
@@ -21,14 +21,6 @@ Basically it's
 anything = anything
 ```
 
-If you want to declare variables and not assign them a value... you're allowed
-to do that ...
-```
-foo:int
-```
-
-but why would you want to?...that's the real question
-
 ## Strictness
 
 _lang_ will infer types by default, but you always get the last word
@@ -37,19 +29,7 @@ _lang_ will infer types by default, but you always get the last word
 foo:int = 42
 ```
 
-You can also negate types, as in "this variable can be anything except a `type`"
-
-```
-foo:!int
-```
-
-You can also set a strict type... dynamically
-
-```
-a -> 1
-
-foo:a
-```
+See <a>Types</a> for more
 
 ## Destructuring
 
@@ -83,8 +63,7 @@ a:string, b:string = data
 
 // The following will not work
 a, c = data
-
-// => Runtime error: The type `data` doesn't have a field `c` ....
+=> Runtime error: The structure `data` doesn't have a field `c` ....
 
 ```
 
@@ -110,10 +89,10 @@ data = [1, 2, 3, 4, 5, 6, 7]
 
 a, b , c, ...rest = data
 
-// => a 1
-// => b 1
-// => c 1
-// => rest [4, 5, 6, 7]
+=> a 1
+=> b 1
+=> c 1
+=> rest [4, 5, 6, 7]
 ```
 
 ### Functions
@@ -126,6 +105,6 @@ nautical -> 'port', 'starboard'
 
 left, right = nautical
 
-// => left 'port'
-// => right 'starboard'
+=> left 'port'
+=> right 'starboard'
 ```

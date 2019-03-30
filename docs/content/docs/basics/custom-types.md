@@ -17,8 +17,7 @@ struct = type {
 }
 ```
 
-For example
-
+For example 
 ```
 person = type {
   first: string
@@ -51,9 +50,11 @@ When you do
 person = type { first: string }
 ```
 
-You're declaring a function named `person` that takes a [type block]() as its only
-parameter. Meaning that to "instantiate" a person, you call the function just
-like any other function.
+You're declaring a function named `person` that takes an optional single
+paramter of type <a>type block</a>.
+
+Meaning that to "instantiate" a person, you call the function just like any
+other function.
 
 ```
 // non explicit
@@ -229,7 +230,7 @@ config.struct_embed_use_copy {
 
 // Or
 
-config.no.struct_embed {
+config.no.struct_embed_use_copy {
   // ...
 }
 ```
