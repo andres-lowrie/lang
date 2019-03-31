@@ -11,7 +11,7 @@ Sometimes you want to define the type of things that are in a structure, for
 that you can use the `type` function the syntax is:
 
 ```
-struct = type {
+binding_name = type {
   field_name: type
   ...
 }
@@ -39,6 +39,29 @@ Now whenever a `person` is passed around, it will always have a field `first`
 and the value will always be 'Jane'
 
 In other words when assigning values to a `type`, those values are immutable.
+
+## Embedding
+
+You can build types by composing types together
+
+```
+cat = type { is_feline: true }
+dog = type { is_canine: true }
+catdog = type { cat, dog }
+
+dump catdog
+=> catdog { is_feline: true, is_canine: true }
+```
+
+However when embedding types, none of the types can share field names:
+
+```
+cat = type { say: 'meow' }
+dog = type { say: 'bark' }
+catdog = type { cat, dog }
+
+=> Error: Ambiguous "say" field....
+```
 
 ## Instantiating
 
@@ -224,13 +247,13 @@ stdout x y
 You can invert the default behavior natrually with 
 
 ```
-config.struct_embed_use_copy {
+config.struct\_embed\_use\_copy {
   // ...
 }
 
 // Or
 
-config.no.struct_embed_use_copy {
+config.no.struct\_embed\_use\_copy {
   // ...
 }
 ```

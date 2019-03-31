@@ -15,7 +15,7 @@ The synax is:
 
 ## Forms of blocks...down the rabbit hole
 
-They're 2 forms of blocks.
+They're 3 forms of blocks.
 
 _body blocks_ like the kind you see in function declarations
 
@@ -27,6 +27,13 @@ _type blocks_ like those you see in type declarations
 
 ```
 t = type { field: type}
+```
+
+_interface blocks_ like thos you see in interface declarations
+<sub>read more about <a>Interfaces</a></sub>
+
+```
+i = interface { fn: sig }
 ```
 
 Context is what determines the different forms of blocks.
@@ -151,7 +158,7 @@ then _lang_ won't do any guessing and instead do compile checking
 For example here's the [type]() function declaration
 
 ```
-type = grammer.block:type -> type {
+type = grammar.block:type -> type {
   // implementation
 }
 ```
@@ -162,7 +169,7 @@ look for type blocks and clear up ambiguous code
 
 ```
 // This is okay
-data = type { 
+data = type {
   x: 32
 }
 
@@ -186,7 +193,7 @@ You can be just as explicit for body blocks if you like by using the body functi
 greet = body { 
   x:string = 'hello'
   y = 'world'
-  
+
   x + y
 }
 

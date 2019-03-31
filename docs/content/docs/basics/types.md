@@ -51,85 +51,7 @@ foo:str:list = ...
 => Compile Error: The type `str` doesn't accept types....
 ```
 
-### Anything can be a type
-
-...Including ...yup... functions
-
-You can pass:
-
-Any function that `type` spits out (see <a>Custom Types</a>)
-
-Any function that `interface` spits out (see <a>Interfaces</a>)
-
-Any function that takes a single parameter that returns a boolean ie: a
-function with the following signature
-
-```
-a:anything -> bool
-```
-
-For example:
-
-```
-// Here foo is a value function in that it will always return true regardless
-of what is passed into it
-foo -> true
-
-// Meaning that when "foo" is used as a type, _lang_ will let anything be
-assigned to the variable on the left hand side
-
-x:foo = 1
-x:foo = 'x'
-x:foo = []
-```
-
-As long as the function has this signature (or), it doesn't matter what the function
-does _lang_ will run the function passing whatever is on the right hand side of
-the "=" and check the return value; if it's `true` lang will allow the
-assignment
-
-For example:
-
-```
-even a -> mod a 2 is 0
-odd a -> not even
-
-// Now we can say that "x" should only ever be a value that's even
-// and "y" should be odd
-
-x:even = {...}
-y:odd = {...}
-```
-
-And you can also pass any function regardless of arity, however _lang_ will go
-down a different decision path when it encounters functions that take more than
-1 parameter
-
-Note 
-
-
-Eg:
-
-```
-// "a" is defined to take no parameters
-a -> 1
-
-foo:a
-```
-
-
-
-
-You can also negate types, as in "this variable can be anything except a `type`"
-
-```
-foo:!int
-```
-
-You can also set a strict type... dynamically
-
-
-## Built-In
+## Built-In types
 
 These are the types that are built into the language, while you can "extend"
 these you cannot delete these
@@ -176,7 +98,7 @@ collection:list:int = [1, 2, "boo"]
 You can access an item in a list via an index as you would suspect
 
 ```
-collection = [1 , 2 , 3]
+collection = [1, 2, 3]
 
 collection[0]
 => 1
@@ -188,7 +110,7 @@ collection[2]
 You can also select from the back of a list using negative indices
 
 ```
-collection = [1 , 2 , 3]
+collection = [1, 2, 3]
 
 collection[-1]
 => 3
@@ -203,7 +125,7 @@ You can also slice up a lists using the `:`
 
 Get everything but the first item
 ```
-collection = [1 , 2 , 3, 4, 5, 6]
+collection = [1, 2, 3, 4, 5, 6]
 
 slice = collection[1:]
 => [2, 3, 4, 5, 6]
@@ -216,11 +138,11 @@ slice = collection[2:4]
 => [3, 4, 5]
 ```
 
-Slices are inclusive by default but you can change that via a config
+Slices are inclusive by default but you can change that via a config block
 
 ```
 config.exclusive_slice {
-  collection = [1 , 2 , 3, 4, 5, 6]
+  collection = [1, 2, 3, 4, 5, 6]
 
   slice = collection[2:4]
   => [4]
@@ -265,7 +187,7 @@ x = collection.last
 => 1
 ```
 
-You can get the _head_ and _tail_ of a list easily via destructuring
+You can get the _head_ and _tail_ of a list easily
 
 ```
 head, tail... = [1, 2, 3, 4]
@@ -276,7 +198,7 @@ head, tail... = [1, 2, 3, 4]
 
 ### Structures
 
-The structures in _lang_ are basically JSON
+Structures in _lang_ are basically JSON
 
 ```
 data = {
@@ -285,8 +207,7 @@ data = {
 }
 ```
 
-This should create a structure called `data` with fields `foo` of type string and
-`bar` of type integer
+This should create a structure called `data` with fields `foo` and `bar`
 
 You should not be limited to primitive types, you can also add functions as fields
 
@@ -343,4 +264,92 @@ data = {
 }
 
 => data {num: 456, foo: 'bar', pi: 3.14}
+```
+
+## Anything can be a type
+
+...Including ...yup... functions
+
+You can pass:
+
+Anything that `type` spits out (see <a>Custom Types</a>)
+
+Anything that `interface` spits out (see <a>Interfaces</a>)
+
+Any single parameter ("unary") function that returns a boolean can be used as a
+type function
+
+For example:
+
+```
+yes = a -> true
+
+// Meaning that when "yes" is used as a type, _lang_ will let anything be
+// assigned to the variable on the left hand side
+
+x:foo = 1
+x:foo = 'x'
+x:foo = []
+```
+
+It doesn't matter what the function does _lang_ will run the function passing
+whatever is on the right hand side of the "=" and check the return value; if
+it's `true` lang will allow the assignment
+
+For example:
+
+```
+even a -> a % 2 == 0
+odd a -> not even
+
+// Now we can say that "x" should only ever be a value that's even
+// and "y" should be odd
+
+x:even = {...}
+y:odd = {...}
+```
+
+If you pass a function that takes more than 1 parameter, then _lang_ will check
+to see if the value on the right hand side is a function with the same
+signature
+
+For example:
+
+```
+add = a:number b:number -> number { a + b }
+
+// These wouldn't be allowed
+x:add = 1              // '1' is a value function so you can't use that
+x:add = (-> 1)         // The lambda has incorrect arity
+x:add = (a b -> false) // The lambda has an incorrect return type
+x:add = (a b -> a / b) // The lambda has both incorrect arity and return
+
+
+// But these would
+x:add = (a:number b:number -> number { a / b })
+x:add = add
+```
+
+### More fun with type functions
+
+Since a type can be a function you can also negate types, as in "this variable
+can be anything except a `type`" for example this
+
+```
+!int = a -> (typeof a) != int
+
+foo:!int = 'a'      // Allowed
+foo:!int = (-> 'a') // Allowed
+foo:!int = 1        // Not allowed
+```
+
+A more pratical application of this would be to combine functions together:
+
+```
+profanity_en = ... // Function that gets a list of bad words in english
+profanity_es = ... // Function that gets a list of bad words in spanish
+
+allowed_word = w -> not in profanity_en + profanity_es
+
+x:allowed_word = ...
 ```
