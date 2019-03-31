@@ -1,5 +1,4 @@
 ---
-weight: 4
 title: "First Class Commands"
 ---
 

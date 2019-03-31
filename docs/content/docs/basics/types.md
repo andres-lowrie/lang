@@ -1,7 +1,3 @@
----
-weight: 3
----
-
 # Types
 
 Type is an overloaded term in _lang_.

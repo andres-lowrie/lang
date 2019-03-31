@@ -1,9 +1,4 @@
----
-weight: 4
----
-
 # Custom Types
-
 
 ## Declaring
 

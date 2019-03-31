@@ -1,4 +1,3 @@
-baseURL: https://github.com/andres-lowrie/lang.git
 title: Lang
 theme: hugo-book
 disableKinds: ["taxonomy", "taxonomyTerm"]
@@ -31,3 +30,6 @@ params:
   # Disabled by default. Uncomment to enable. Requires 'BookRepo' param.
   # Path must point to 'content' directory of repo.
   BookEditPath: edit/master/docs/content
+
+  # Menu
+  BookMenuBundle: docs/menu

@@ -1,7 +1,3 @@
----
-weight: 6
----
-
 # Blocks
 
 These are the most magical pieces of _lang_ (excluding the hacking part) since

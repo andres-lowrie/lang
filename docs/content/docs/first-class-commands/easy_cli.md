@@ -1,4 +1,3 @@
-
 # Easy Cli
 
 _lang_ should make interacting with the cli super easy and feel as native as it
