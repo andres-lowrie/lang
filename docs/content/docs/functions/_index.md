@@ -189,7 +189,7 @@ you do in any other function
 nums = [1, 2, 3]
 
 sum = fold (acc i -> acc + i) nums
-// => 6
+=> 6
 ```
 
 You can also have lambdas with multiple retuns
@@ -199,7 +199,7 @@ add = a b -> a + b
 
 add (-> 2, 4)
 
-// => 6
+=> 6
 ```
 
 ## Calling a function
@@ -232,11 +232,11 @@ noop -> {}
 
 // And call it like it's defined
 noop
-// => Nothing
+=> Nothing
 
 // but you can also call it like this
 noop 1 2 3
-// => Nothing
+=> Nothing
 ```
 
 _lang_ calls this "auto rest"
@@ -409,15 +409,15 @@ Examples of auto\_infix and alternatives
 ```
 // The following is using the `divide` and `plus` function in infix position
 4 / 4 + 4
-// => 5
+=> 5
 
 // You could be explicit if you liked to
 4 </> 4 <+> 4
-// => 5
+=> 5
 
 // Or you can do it without infix
 + 4 (/ 4 4)
-// => 5
+=> 5
 ```
 
 #### With examples `auto_curry`
@@ -427,5 +427,5 @@ Examples of auto\_infix and auto\_curry working hand and hand
 ```
 x = 4 /
 result = x 4
-// => 1
+=> 1
 ```

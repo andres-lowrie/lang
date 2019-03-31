@@ -107,13 +107,13 @@ getData -> {
 user = type getData
 stdout user
 
-// => "What's your name?"
-// > Bobby
-//
-// => "What's your last name?"
-// > Sue
-//
-// => user { first:'Bobby', last: 'Sue' }
+=> "What's your name?"
+> Bobby
+
+=> "What's your last name?"
+> Sue
+
+=> user { first:'Bobby', last: 'Sue' }
 ```
 
 ## Mutability
@@ -138,7 +138,7 @@ person = mut type {
   last: string,
 } { name: 'Jane', last: 'Doe'}
 
-// => person { name: 'Jane', last: 'Doe' }
+=> person { name: 'Jane', last: 'Doe' }
 ```
 
 The difference between a structure and a type is the fact that the
@@ -158,9 +158,9 @@ data = {
 
 propaganda = prompt "Share truth? 2 + 2 = " + data.truth
 
-// => Share truth? 2 + 2 = 4
-//
-// > 5
+=> Share truth? 2 + 2 = 4
+
+> 5
 
 data.truth = propaganda
 
@@ -171,7 +171,7 @@ data = type data
 // thus we can modify the type anymore
 data.truth = 4
 
-=> Compile error: The type `data` shouldn't have its field `truth` ....
+=> Error: The type `data` shouldn't have its field `truth` ....
 ```
 
 ## Self referencing
@@ -213,17 +213,17 @@ train = a -> a.damage = 'high'
 train fist
 
 dump weapons
-// => weapons {
-// =>   main: gun {
-// =>     damage: 'high'
-// =>   },
-// =>   secondary: knife {
-// =>     damage: 'med'
-// =>   },
-// =>   aux: fist {
-// =>     damage: 'high'
-// =>   },
-// => }
+=> weapons {
+=>   main: gun {
+=>     damage: 'high'
+=>   },
+=>   secondary: knife {
+=>     damage: 'med'
+=>   },
+=>   aux: fist {
+=>     damage: 'high'
+=>   },
+=> }
 ```
 
 If you don't want references you can `copy` structures instead
@@ -235,8 +235,8 @@ y = { x: copy x }
 y.x = 'not bar'
 
 stdout x y
-// => x { foo: 'bar' }
-// => y { foo: 'not bar' }
+=> x { foo: 'bar' }
+=> y { foo: 'not bar' }
 ```
 
 You can invert the default behavior natrually with 

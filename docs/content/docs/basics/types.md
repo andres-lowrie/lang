@@ -44,7 +44,7 @@ can accept a type so for example the following wouldn't work
 
 ```
 foo:str:list = ...
-=> Compile Error: The type `str` doesn't accept types....
+=> Error: The type `str` doesn't accept types....
 ```
 
 ## Built-In types
@@ -86,7 +86,7 @@ You can be explicit about stuff
 ```
 collection:list:int = [1, 2, "boo"]
 
-=> Compile error: The list 'collection' can only have 'int' ....
+=> Error: The list 'collection' can only have 'int' ....
 ```
 
 #### Index access

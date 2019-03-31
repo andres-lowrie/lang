@@ -20,7 +20,7 @@ a = x or 'default'
 x = 0 
 
 a = if x true false
-// => false
+=> false
 ```
 
 
@@ -39,10 +39,10 @@ The dot operator can be used to access fields of a structure or custom type
 person = { first: 'Tony', last: 'Stark' }
 
 person.first
-// => Tony
+=> Tony
 
 person.last
-// => Stark
+=> Stark
 ```
 
 You can also add fields with the dot operator and have the assignment work the
@@ -64,7 +64,7 @@ the braces
 ```
 person.name = 'James Bond'
 person.email = '007@mi6.gov.uk'
-// => person { name: 'James Bound', email: '007@mi6.gov.uk' }
+=> person { name: 'James Bound', email: '007@mi6.gov.uk' }
 ```
 
 ### Types
@@ -74,32 +74,28 @@ When the dot operator is used on a type where the right hand side of the
 operator is an unknown field, then _lang_ will look for functions that can
 operate on the type on the left hand side of the dot
 
-By default, the functions need to have a specific signature which is
-
-`name = predicate type`
-
 For example
 
 ```
-find = a xs:list -> {
+find = f xs:list -> {
   head, tail... = xs
-  if (a head) head (find a tail)
+  if (f head) head (find f tail)
 }
 
 [2,3,4].find(i -> i is 2)
-// => 2
+=> 2
 ```
 
 If you want to be more strict you can of course do that
 
 ```
-find = a xs:list:int -> {
+find = f xs:list:int -> {
   head, tail... = xs
-  if (a head) head (find a tail)
+  if (f head) head (find f tail)
 }
 
 [1, "foo", false].find (i -> i % 2)
-// => Runtime error: Couldn't find a function named `find` that operates on ....
+=> Runtime error: Couldn't find a function named `find` that operates on ....
 ```
 
 ## Pipe
@@ -113,7 +109,6 @@ For example
 str = "hello world, from the pipes"
 
 x = str | rm ',' | strings.split_words | strings.uppercase
-// => ["HELLO", "WORLD", "FROM", "THE", "PIPES"]
+=> ["HELLO", "WORLD", "FROM", "THE", "PIPES"]
 ```
-
 

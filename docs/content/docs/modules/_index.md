@@ -18,7 +18,7 @@ To use it in your code, you can use the `import` function:
 import math
 
 math.add 1 2
-// => 3
+=> 3
 ```
 
 ## Public and Private functions
@@ -38,7 +38,7 @@ priv sub = a b -> a - b
 import math
 
 math.sub 1 2 
-// => compile error: no function named `sub` in the `math` module ....
+=> Error: no function named `sub` in the `math` module ....
 ```
 
 You can be excplicit if you like and use the `pub` function as well:
@@ -63,7 +63,7 @@ config.module.priv_by_default {
 }
 
 math.sub 1 2 
-// => compile error: no function named `sub` in the `math` module ....
+=> Error: no function named `sub` in the `math` module ....
 ```
 
 ## The `import` function
@@ -96,7 +96,7 @@ You can control the namespace of the functions you explicitly import pass the st
 ```
 import math as m
 
-// ....
+...
 ```
 
 You can also combine modules into a "namespace" if you like:
@@ -127,13 +127,13 @@ pi = 3.1415926535897932384626433
 import math, geometry, trigonometry as m
 
 m.math.pi 
-// => 3.14
+=> 3.14
 
 m.geometry.pi
-// => 3.1415926535897932384626433
+=> 3.1415926535897932384626433
 
 m.pi
-// => Runtime Error: Could not find function 'pi' in 'm'....
+=> Runtime Error: Could not find function 'pi' in 'm'....
 ```
 
 ### destructuring

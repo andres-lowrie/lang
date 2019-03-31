@@ -143,7 +143,7 @@ So if you try to pass it as a type block _lang_ will yell at you
 
 y = type x
 
-// Compile error: Incorrect block type. The function `type` doesn't allow ....
+// Error: Incorrect block type. The function `type` doesn't allow ....
 ```
 
 ## Lock it down

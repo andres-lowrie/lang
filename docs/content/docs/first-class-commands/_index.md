@@ -10,19 +10,19 @@ _lang_ allows scripts to call "cli commands" directly with no ceremony:
 on_the_box = who
 
 stdout on_the_box
-// => "jane console Mar 4 21:33\n jane ttys001 Mar 10 15:06"
+=> "jane console Mar 4 21:33\n jane ttys001 Mar 10 15:06"
 ```
 
 You can also do the piped style commands
 
 ```
 ls
-// => "README.md \ndocs"
+=> "README.md \ndocs"
 
 readme = ls | rg *.md
 
 stdout readme
-// => "README.md"
+=> "README.md"
 ```
 
 _lang_ supports types which means that you can run commands and get things out that are not just "text":
@@ -32,14 +32,14 @@ _lang_ supports types which means that you can run commands and get things out t
 x = fd --type d . 'docs/content'
 
 stdout x
-// => "docs/content/docs\ndocs/content/basics\ndocs/content/....
+=> "docs/content/docs\ndocs/content/basics\ndocs/content/....
 
 
 // coerce into types instead
 x = split strings.newline fd --type d . 'docs/content'
 
 stdout x
-// => [ "docs/content/docs", "docs/content/docs/basics", "docs/c...
+=> [ "docs/content/docs", "docs/content/docs/basics", "docs/c...
 
 
 // Express what you want to express
@@ -50,7 +50,7 @@ x = split strings.newline fd --type d . 'docs/content'
   | tr a-z A-Z
 
 stdout x
-// => "DOCS"
+=> "DOCS"
 ```
 
 This works because a command is just a function and thus you can use commands
@@ -91,10 +91,10 @@ can use <a>multiple returns</a> to capture output and error:
 out, err = bogus
 
 out
-// => Nothing
+=> Nothing
 
 err
-// => "zsh: command not found: bogus"
+=> "zsh: command not found: bogus"
 ```
 
 The multiple outputs that a command will return are:
@@ -107,13 +107,13 @@ The multiple outputs that a command will return are:
 out, err, code = bogus
 
 out
-// => Nothing
+=> Nothing
 
 err
-// => "zsh: command not found: bogus"
+=> "zsh: command not found: bogus"
 
 code
-// => 127
+=> 127
 ```
 
 
@@ -124,7 +124,7 @@ cause the return to just be the return code
 ```
 config.no.multi_return_command { 
   bogus
-  // => 127
+  => 127
 }
 ```
 
