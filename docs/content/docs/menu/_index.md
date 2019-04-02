@@ -15,4 +15,5 @@ headless: true
 - [Modules](/docs/modules/)
 - [First-Class-Commands](/docs/first-class-commands/)
   - [Easy CLI](/docs/first-class-commands/easy_cli)
-- [Event-Hooks](/docs/event-hooks/)
+- [Event Hooks](/docs/event-hooks/)
+- [Concurrency](/docs/concurrency/)

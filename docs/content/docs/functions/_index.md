@@ -22,7 +22,7 @@ function_name -> body
 ### The thin arrow
 
 There isn't a whole bunch of ceremony to declaring functions: the only thing you
-really need is the _thin arrow_ and an assignment operator
+really need is the _thin arrow_ and an assignment binding
 
 ```
 add = a b -> {
@@ -37,7 +37,7 @@ a function can be declared to take 0 or any number of parameters
 
 ```
 // None
-add = () -> {}
+add -> {}
 
 // 1
 add = a -> {}
@@ -155,10 +155,10 @@ You can use shorthand form for functions with multiple retuns as well:
 yes_no -> true, false
 ```
 
-By default, the compiler will create a [body block]() around anything on the
+By default, the compiler will create a <a>block</a> around anything on the
 right hand side of the thin arrow if you don't specify one.
 
-The only time you're required to specify one (body block) is when you want to be
+The only time you're required to specify one (a block) is when you want to be
 explicit about the return of a function
 
 ## Lambdas
@@ -169,10 +169,10 @@ assigned to a variable), you just have to surround your function with parenthesi
 The syntax is:
 
 ```
-(params -> return body)
+([params] -> body)
 ```
 
-where `params` and `return` are optional.
+where `params` are optional.
 
 For example
 
@@ -219,18 +219,56 @@ add 2 2
 => 4
 ```
 
-### Parameter magic
+You can use parenthesis to be explicit about which parameters go to which
+function
 
-You can actually pass anything into a function regardless of the "arity" of your
-function, _lang_ will make the best of it
+```
+add = a b -> a + b
+sub = a b -> a - b
+
+// Explicit
+value = add 2 (sub 3 1)
+dump value
+=> 4
+
+// Implicit
+value = add 2 sub 3 1
+dump value
+=> Error: The function `sub` wants to 2 parameters, received....
+```
+
+^ That error message can be confusing because of how _lang_ tries to guess at
+what you want.
+
+In this particular case, the function `add` takes two parameters of any type
+which causes _lang_ to pass the value "2" and the function "sub" as the
+parameters to add.
+
+Then the values of "3" and "1" are actually passed to `add` as "rest
+parameters".
+
+Finally, when _lang_ tries to run `add` it complains because the function `sub`
+is missing the 2 parameters it declared.
+
+The "Explicit" version is declared in such a way that tells _lang_ that `add`
+should actually get the value from the result of calling `sub` with the values
+"3" and "1"
+
+_lang_ is trying to be ulta dynamic out of the gate with...
+
+### Auto args
+
+By default, you can actually pass anything into a function regardless of the
+"arity" of your function, and _lang_ will try and make the best of it
 
 For example
 
 ```
-// You can have a function that looks like 
+// You can have a function declared like this meaning that it takes no
+// parameters
 noop -> {}
 
-// And call it like it's defined
+// And call it like it expects
 noop
 => Nothing
 
@@ -239,7 +277,7 @@ noop 1 2 3
 => Nothing
 ```
 
-_lang_ calls this "auto rest"
+_lang_ refers to this "auto args"
 
 Basically _lang_ will accept any _extra_ parameters passed into a
 function and assign them to the <a ref="">list</a> variable `args` in your function body
@@ -253,22 +291,25 @@ add 1 2 3 4
 => [1, 2, 3, 4]
 ```
 
-If you want to assign another name to `args` you can do either it via [config]()
-or when you declare your function using the variadic syntax
+If you want to assign another name to `args` you can do it using the variadic
+syntax
 
 ```
 add = ...nums -> {
-  // The compiler will assign args to nums in this case
+  // _lang_ will assign args to "nums" in this case
   // nums = args
 }
 ```
 
 Of course you can increase the strictness and specifically say "no, you take
-no parameters dammit"
+no parameters dammit" and turn off the auto\_args feature all together
 
 ```
-coinfig.no.auto_rest {
-  add = () -> {}
+coinfig.no.auto_args {
+  add -> {}
+
+  add 1 2
+  => Error: `add` takes no parameters, given....
 }
 ```
 
@@ -286,6 +327,74 @@ add ...stuff
 => 6
 ```
 
+## Overloading
+
+One of the core goals of _lang_ is to let you turn on the strictness as you
+need it to allow you to "code jazz" while your working out an idea but then
+later turn up the "type-y-ness" when/if you want
+
+One of the ways to do this is by using the built pattern matching functionality
+to define a function that different arities and return types (_lang_ calls this
+"signatures")
+
+For Example:
+
+```
+log_a_thing = f -> {
+  stdout "Start"
+  f
+  stdout "End"
+}
+
+log_a_thing = fn:list -> {
+  stdout "Run list"
+  every log_a_thing fn
+  stdout "Finish list"
+}
+
+log_a_thing (-> stdout 'One')
+=> 'Start'
+=> 'One'
+=> 'End'
+
+
+log_a_thing [(-> stdout 1), (-> stdout 2), (-> stdout 3)]
+=> 'Run list'
+=> 'Start'
+=> 1
+=> 'End'
+=> 'Start'
+=> 2
+=> 'End'
+=> 'Start'
+=> 3
+=> 'End'
+=> 'Finish list'
+```
+
+The function `log_a_thing` has 2 signatures declared: One where anything can be
+passed into it and another that accepts a list of anythings.
+
+When _lang_ sees you define a function with multiple signatures, it will then
+assume that you've covered all the signatures you want to accept so if you call
+your function with a set of parameters it can't match then you'll get an error:
+
+```
+log_a_thing 1 2 3
+=> Error: `log_a_thing` expects either 1 parameter....
+```
+
+Of course you can fix this by just adding this signature in your definitions:
+
+```
+log_a_thing = f -> {...}
+log_a_thing = f:list -> {...}
+log_a_thing -> {...}
+```
+
+Now _lang_ will let either 1 thing, a list of things, or anythings
+
+
 ## Functional
 
 At it's core, _lang_ is a functional language meaning that certain features
@@ -293,9 +402,9 @@ are baked in
 
 ### Function are first-class citizens
 
-Pass them anywhere
+Which means you can pass them like any other "value"
 
-As a variable
+As a parameter
 
 ```
 add = a b -> a + b
@@ -304,7 +413,6 @@ n -> rand 1 10
 
 add n 4
 ```
-
 
 Return them and declare them in other functions
 
@@ -318,12 +426,16 @@ add2Sub3 1
 => 0
 ```
 
-On the fly...
+On the fly as values pretty much anywhere, they're basically any other value
 
 ```
-add = a b -> a + b
+nums = [1..100]
 
-add (rand 1 10) 4
+add_inc = map (i -> + i) nums
+=> [function, function, func....]
+
+every (el, idx -> el idx) add_inc
+=> [2, 4, 6, 8, ....]
 ```
 
 ### Auto curry / partial application
@@ -350,7 +462,8 @@ add2 3
 ```
 
 Like 9 out of 10 times this is great and you want this, but every now an then
-you don't want to auto curry; you can disable it ad-hoc on the fly via a [scope block]()
+you don't want to auto curry; you can disable it ad-hoc on the fly via a
+<a>config block</a>
 
 ```
 add = a b -> a + b
@@ -363,22 +476,19 @@ config.no.auto_curry {
 => Runtime error: add wanted 2 parameters, received only 1 on line ....
 ```
 
-Like everything else, you can disable auto curry via the [config]() if you like
-... but you don't want to do that. :wink:
-
 ### Auto infix
 
 Just about everything in _lang_ is a function, including most operators
 
-For example the operator `+` is actually defined like this
+For example the operator `+` is actually a function that has a definition
+_similar_ to this
 
 ```
 add = a:num, b:num -> a + b
 + = add
 ```
 
-Meaning that `+` is actually a function and thus the following two expressions
-are equivalent
+Meaning that  the following two expressions are equivalent
 
 ```
 // Called like any other function

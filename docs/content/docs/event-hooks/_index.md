@@ -28,3 +28,7 @@ with { on_error } {
   // handle error
 }
 ```
+
+## hooks for `blocks`
+
+**on\_error :** When any error happens on when the body blocks runs
