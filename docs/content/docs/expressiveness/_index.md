@@ -70,8 +70,8 @@ person.email = '007@mi6.gov.uk'
 ### Types
 Things start to get spicy when types and dots are in play
 
-When the dot operator is used on a type where the right hand side of the
-operator is an unknown field, then _lang_ will look for functions that can
+When the dot operator is used on a type what _lang_ is doing is looking for a
+function that matches the name on the right hand side of the dot that can
 operate on the type on the left hand side of the dot
 
 For example
@@ -82,10 +82,9 @@ find = f xs:list -> {
   if (f head) head (find f tail)
 }
 
-[2,3,4].find(i -> i is 2)
+[2,3,4].find (i -> i is 2)
 => 2
 ```
-
 If you want to be more strict you can of course do that
 
 ```
@@ -97,6 +96,32 @@ find = f xs:list:int -> {
 [1, "foo", false].find (i -> i % 2)
 => Runtime error: Couldn't find a function named `find` that operates on ....
 ```
+
+What this is doing is basically reversing the parameter order and calling the
+function to the right hand side of the dot in a "infix" style.
+
+This type of expression isn't limited to list of collection style types but
+works on all types:
+
+```
+uppercase = s:str -> {...}
+
+// Calling it like this
+"hello".uppercase
+
+// Is doing this behind the scenes in place
+uppercase "hello"
+
+
+// You're not limited to 1 parameter either
+foo = a b c:str -> {...}
+
+"something".foo b a
+
+// Spacing between the dot doesn't matter
+"something" . foo b a
+```
+
 
 ## Pipe
 

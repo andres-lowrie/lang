@@ -13,8 +13,11 @@ There are 3 forms of types:
 Syntax is
 
 ```
+// For variables
 binding_name [ : <type> ... ] = assignment
-fn binding_name [ : <type> ... ] -> <type> block
+
+// For function
+binding_name = [param:<type> ... ] -> <type> block
 ```
 
 For example
@@ -28,8 +31,8 @@ foo a:int b:int -> int {}
 ```
 
 Some types are "Complex types" eg structures, lists, and potentially custom
-types in that they contain other data. For these types, you specify containing
-type by simply adding more `:<type>`
+types in that they contain other data. For these types, you can specify
+containing type by simply adding more `:<type>`
 
 ```
 // A list that holds strings
@@ -218,17 +221,19 @@ data = {
 
 Here `data` now also has a function associated to it, `f`
 
-You can call a function when declaring a structure
+You can call a function when declaring a structure and use its value
 
 ```
+pi = 3.14
+
 data = {
   foo: 'bar',
   num: 123,
-  pi: (-> 3.14)()
+  pi: pi
 }
 ```
 
-This will add `pi` with the float value of `3.14` to `data` structure
+This will add a key `pi` with the float value of `3.14` to `data` structure
 
 #### Shorthand
 
@@ -245,22 +250,10 @@ data = {
   pi
 }
 
-=> data {num: 456, foo: 'bar', pi: () -> Int}
+=> data {num: 456, foo: 'bar', pi: -> int}
 ```
 
-`pi` in the above example is a function that returns pi. If you want the
-actual value of the function you'll have to call the function
-
-```
-
-data = {
-  num: 456,
-  foo,
-  pi()
-}
-
-=> data {num: 456, foo: 'bar', pi: 3.14}
-```
+`pi` in the above example is a function that returns pi.
 
 ## Anything can be a type
 
@@ -283,9 +276,9 @@ yes = a -> true
 // Meaning that when "yes" is used as a type, _lang_ will let anything be
 // assigned to the variable on the left hand side
 
-x:foo = 1
-x:foo = 'x'
-x:foo = []
+x:yes = 1
+x:yes = 'x'
+x:yes = []
 ```
 
 It doesn't matter what the function does _lang_ will run the function passing
@@ -301,8 +294,13 @@ odd a -> not even
 // Now we can say that "x" should only ever be a value that's even
 // and "y" should be odd
 
-x:even = {...}
-y:odd = {...}
+x:even = 3
+=> Error: `x` can only be assigned values that `even` returns `true` for....
+
+y:odd = 1
+
+z:odd = 4 / 2
+=> Error: `z` can only be assigned values that `odd` returns `true` for....
 ```
 
 If you pass a function that takes more than 1 parameter, then _lang_ will check
@@ -318,10 +316,10 @@ add = a:number b:number -> number { a + b }
 x:add = 1              // '1' is a value function so you can't use that
 x:add = (-> 1)         // The lambda has incorrect arity
 x:add = (a b -> false) // The lambda has an incorrect return type
-x:add = (a b -> a / b) // The lambda has both incorrect arity and return
+x:add = (a b -> a / b) // The lambda has both incorrect type and return
 
 
-// But these would
+// But these would work
 x:add = (a:number b:number -> number { a / b })
 x:add = add
 ```

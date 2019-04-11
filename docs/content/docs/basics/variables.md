@@ -43,6 +43,18 @@ a, b, c = 1 2 3
 a, b, c = 'a' 'b' 'c'
 ```
 
+You can also ignore things by using the underscore `_` in the left
+hand side:
+
+```
+a, _, c = 1 2 3
+
+a
+=> 1
+c
+=> 3
+```
+
 ### Structures
 
 When pulling out variables from a structure, you need to name the variables the
@@ -86,8 +98,8 @@ data = [1, 2, 3, 4, 5, 6, 7]
 a, b , c, ...rest = data
 
 => a 1
-=> b 1
-=> c 1
+=> b 2
+=> c 3
 => rest [4, 5, 6, 7]
 ```
 

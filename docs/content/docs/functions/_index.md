@@ -9,7 +9,7 @@ In _lang_ everything is a function and they're everywhere
 ## Declaring
 
 There's no `keyword` for declaring functions; they're treated like any other
-variable. Instead the compiler will look at the declaration and determine that
+variable. Instead the interpreter will look at the declaration and determine that
 the variable you assigned is of the function type.
 
 The syntax is
@@ -30,13 +30,13 @@ add = a b -> {
 }
 ```
 
-This tells the compiler that the left side of the arrow are parameters and the
-right side of the arrow is the body.
+This tells the interpreter that the left side of the arrow are parameters and the
+right side of the arrow is the body of the function.
 
 a function can be declared to take 0 or any number of parameters
 
 ```
-// None
+// None (or any depending on configuration)
 add -> {}
 
 // 1
@@ -107,9 +107,17 @@ You can specify the types of those as well like any other function just need
 some commas in the right places
 
 ```
-name -> string, string {
+name -> str, str {
   'John', 'Smith'
 }
+```
+
+You can ignore returns you don't care about using the underscore `_`:
+
+```
+name -> 'John', 'Smith'
+
+_, last = name
 ```
 
 ## Shorthand
@@ -155,7 +163,7 @@ You can use shorthand form for functions with multiple retuns as well:
 yes_no -> true, false
 ```
 
-By default, the compiler will create a <a>block</a> around anything on the
+By default, the interpreter will create a <a>block</a> around anything on the
 right hand side of the thin arrow if you don't specify one.
 
 The only time you're required to specify one (a block) is when you want to be
@@ -182,8 +190,8 @@ say = something -> stdout something
 say (-> "Hello World")
 ```
 
-If your lambda needs params, then you should be able to define them the same way
-you do in any other function
+If your lambda needs params, then you can define them the same way you do in
+any other function
 
 ```
 nums = [1, 2, 3]
@@ -192,12 +200,15 @@ sum = fold (acc i -> acc + i) nums
 => 6
 ```
 
-You can also have lambdas with multiple retuns
+You can also have lambdas with multiple retuns by specifying returns with
+commas
 
 ```
 add = a b -> a + b
 
-add (-> 2, 4)
+f = (-> 2, 4)
+
+add f
 
 => 6
 ```
@@ -228,12 +239,10 @@ sub = a b -> a - b
 
 // Explicit
 value = add 2 (sub 3 1)
-dump value
 => 4
 
 // Implicit
 value = add 2 sub 3 1
-dump value
 => Error: The function `sub` wants to 2 parameters, received....
 ```
 
@@ -334,7 +343,7 @@ need it to allow you to "code jazz" while your working out an idea but then
 later turn up the "type-y-ness" when/if you want
 
 One of the ways to do this is by using the built pattern matching functionality
-to define a function that different arities and return types (_lang_ calls this
+to define a function with different arities and return types (_lang_ calls this
 "signatures")
 
 For Example:
@@ -346,9 +355,9 @@ log_a_thing = f -> {
   stdout "End"
 }
 
-log_a_thing = fn:list -> {
+log_a_thing = fns:list -> {
   stdout "Run list"
-  every log_a_thing fn
+  map log_a_thing fns
   stdout "Finish list"
 }
 
@@ -372,8 +381,8 @@ log_a_thing [(-> stdout 1), (-> stdout 2), (-> stdout 3)]
 => 'Finish list'
 ```
 
-The function `log_a_thing` has 2 signatures declared: One where anything can be
-passed into it and another that accepts a list of anythings.
+The function `log_a_thing` has 2 signatures declared: One where 1 function can
+be passed into it and another that accepts a list of functions
 
 When _lang_ sees you define a function with multiple signatures, it will then
 assume that you've covered all the signatures you want to accept so if you call
@@ -384,15 +393,13 @@ log_a_thing 1 2 3
 => Error: `log_a_thing` expects either 1 parameter....
 ```
 
-Of course you can fix this by just adding this signature in your definitions:
+Of course you can fix this by just adding the "catch all" signature in your definition:
 
 ```
-log_a_thing = f -> {...}
-log_a_thing = f:list -> {...}
 log_a_thing -> {...}
 ```
 
-Now _lang_ will let either 1 thing, a list of things, or anythings
+Now _lang_ will let either 1 function, a list of functions, or anything
 
 
 ## Functional
@@ -461,6 +468,18 @@ add2 3
 
 ```
 
+You can specify which parameters to partialy apply using the underscore `_` as
+well:
+
+```
+address = num street country -> { join args ' ' }
+
+missing_street = address 123 _ 'USA'
+
+complete_address = missing_street 'Main St.'
+=> '123 Main St. USA'
+```
+
 Like 9 out of 10 times this is great and you want this, but every now an then
 you don't want to auto curry; you can disable it ad-hoc on the fly via a
 <a>config block</a>
@@ -484,7 +503,7 @@ For example the operator `+` is actually a function that has a definition
 _similar_ to this
 
 ```
-add = a:num, b:num -> a + b
+add = a:num b:num -> a + b
 + = add
 ```
 
