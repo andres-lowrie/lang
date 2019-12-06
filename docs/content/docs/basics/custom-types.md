@@ -3,7 +3,7 @@
 ## Declaring
 
 Sometimes you want to define the type of things that are in a structure, for
-that you can use the `type` function the syntax is:
+that you can use the `type constructor` syntax is:
 
 ```
 binding_name = type {
@@ -15,33 +15,62 @@ binding_name = type {
 For example 
 ```
 person = type {
-  first: string
+  first: str,
+  last: str
 }
 
 // or in one line if you like
-person = type { first: string }
+person = type { first: str, last: str }
 ```
 
 You can also declare a type and assign defaults to the fields
 
 ```
 person = type {
-  first:string = 'Jane'
+  first:str,
+  last = 'Doe'
+}
+
+// Notice that the field 'last' doesn't have a type, _lang_ will infer the type,
+// you could however be explicit
+
+person = type {
+  first:str,
+  last:str = 'Doe'
+}
+
+// Both of these yield the same type
+```
+
+Now whenever a `person` is passed around, it will always have the field `last`
+set and the value will **always** be the string 'Doe; in other words when
+assigning values to a `type`, those values are immutable.
+
+On the other hand if you just want to a type to use a shape, ie: the
+actual _type_ of the fields doesn't matter, then you can use the `anything` type:
+
+```
+person = type { 
+  first: anything,
+  last: anything
 }
 ```
 
-Now whenever a `person` is passed around, it will always have a field `first`
-and the value will always be 'Jane'
+The type constructor will default to the anything type if none is specified, so
+if you just wanna make shapes you can use the shorthand
 
-In other words when assigning values to a `type`, those values are immutable.
+```
+person = type { first, last }
+```
+
 
 ## Embedding
 
 You can build types by composing types together
 
 ```
-cat = type { is_feline: true }
-dog = type { is_canine: true }
+cat = type { is_feline = true }
+dog = type { is_canine = true }
 catdog = type { cat, dog }
 
 dump catdog
@@ -65,44 +94,121 @@ When you declare a `type` you're actually declaring a function.
 When you do
 
 ```
-person = type { first: string }
+person = type { first: str, last:str }
 ```
 
 You're declaring a function named `person` that takes an optional single
-paramter of type <a>type block</a>.
+paramter of type _"structure"_
 
 Meaning that to "instantiate" a person, you call the function just like any
-other function.
+other function and pass in a structure to it
 
 ```
-// non explicit
-developer = person { 'Jane' }
-
-// explicit
-developer = person { first:'Jane' }
+developer = person { first: 'Jane', last: 'Doe' }
 ```
 
-When using the non-strict syntax the order of the parameters will be assigned in
-the same order the fields of the structure where declared in other words
+The single paramter is always optional for a type so you could also do the
+following to acheive the same thing:
 
 ```
-abc = type { a:int, b:int, c:int }
-easy_as = abc 1 2 3
-
-=> abc { a:1, b:2, c:3 }
+developer = person
+developer.first = 'Jane'
+developer.last = 'Doe'
 ```
 
-## Functions everywhere
+## Conditional Types
 
-You can leverage the functional nature of _lang_ to create types on the fly as
+The type system is _lang_ is not only optional but it also strives to be conditional
+
+The idea is to allow the user to be able to express a condition for a variable.
+
+_lang_ will check if the condition is true when trying to bind a value to said
+variable; _lang_ calls these "type functions"
+
+> Any single parameter ("unary") function that returns a boolean can be used as a type function
+
+For example:
+
+```
+// We declare a unary function
+//
+// In this case is a function that always returns true
+yes = a -> true
+
+// This means that when "yes" is used as a type, _lang_ will let anything be
+// assigned to the variable on the left hand side... because `yes`
+// is always true
+
+x:yes = 1
+x:yes = 'x'
+x:yes = []
+```
+
+It doesn't matter what the function does _lang_ will run the function passing
+whatever is on the right hand side of the "=" and check the return value; if
+it's `true` lang will allow the assignment
+
+For example:
+
+```
+even = a -> a % 2 == 0
+odd = a -> not even
+
+// Now we can say that "x" should only ever be a value that's even
+// and "y" should only ever be a value that is odd
+
+x:even = 3
+=> Error: `x` can only be assigned values that `even` returns `true` for....
+
+y:odd = 1
+
+z:odd = 4 / 2
+=> Error: `z` can only be assigned values that `odd` returns `true` for....
+```
+
+### More fun with type functions
+
+Since a type can be a function you can also negate types, as in "this variable
+can be anything except a `type`" for example this
+
+```
+not_int = a -> (typeof a) != int
+
+foo:not_int = 'a'      // Allowed
+foo:not_int = (-> 'a') // Allowed
+foo:not_int = 1        // Not allowed
+```
+
+A more pratical application of this would be to combine functions together:
+
+```
+profanity_en = ... // Function that gets a list of bad words in english
+profanity_es = ... // Function that gets a list of bad words in spanish
+
+allowed_word = w -> not in profanity_en + profanity_es
+
+x:allowed_word = ...
+```
+
+### Considerations
+
+built-in types as well as the types built with the "type constructor" are
+determined at compile time where the conditional type is a check done at runtime
+meaning that conditional types will cause runtime errors if a bad assignment is
+seen in the code.
+
+To account for this <a>Error Handling</a>
+
+## Type Function
+
+You can leverage the functional nature of _lang_ to create type functions on the fly as
 well
 
 ```
-getData -> {
+getData ->
   first = prompt "What's your name?"
   last = prompt "What's your last name?"
   {first, last}
-}
 
 user = type getData
 stdout user
@@ -252,3 +358,4 @@ config.no.struct\_embed\_use\_copy {
   // ...
 }
 ```
+

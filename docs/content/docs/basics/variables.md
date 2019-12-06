@@ -23,6 +23,13 @@ _lang_ will infer types by default, but you always get the last word
 
 ```
 foo:int = 42
+=> 42
+
+foo:float = 42
+=> 42.0
+
+foo:string = 42
+=> "42"
 ```
 
 See <a>Types</a> for more
@@ -95,12 +102,19 @@ capture them as a list in a new varialbe
 ```
 data = [1, 2, 3, 4, 5, 6, 7]
 
-a, b , c, ...rest = data
+a, b, c, ...rest = data
 
-=> a 1
-=> b 2
-=> c 3
-=> rest [4, 5, 6, 7]
+a
+=> 1
+
+b
+=> 2
+
+c
+=> 3
+
+rest
+=> [4, 5, 6, 7]
 ```
 
 ### Functions
