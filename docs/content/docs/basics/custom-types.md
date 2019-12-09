@@ -116,28 +116,48 @@ developer.first = 'Jane'
 developer.last = 'Doe'
 ```
 
+## Type Function
+
+You can leverage the functional nature of _lang_ to create type functions on the fly as
+well
+
+```
+getData ->
+  first = prompt "What's your name?"
+  last = prompt "What's your last name?"
+  {first, last}
+
+user = type getData
+stdout user
+
+=> "What's your name?"
+> Bobby
+
+=> "What's your last name?"
+> Sue
+
+=> user { first:'Bobby', last: 'Sue' }
+```
+
 ## Conditional Types
 
-The type system is _lang_ is not only optional but it also strives to be conditional
+The type system in _lang_ is not only optional but it also strives to be
+conditional; the idea is to allow the user to be able to express a condition
+which must evaluate to true before a value can be bound to a variable.
 
-The idea is to allow the user to be able to express a condition for a variable.
-
-_lang_ will check if the condition is true when trying to bind a value to said
-variable; _lang_ calls these "type functions"
-
-> Any single parameter ("unary") function that returns a boolean can be used as a type function
+The conditions are expressed via single paramter ("unary") boolean functions
 
 For example:
 
 ```
 // We declare a unary function
 //
-// In this case is a function that always returns true
+// In this case it is a function that always returns true
 yes = a -> true
 
 // This means that when "yes" is used as a type, _lang_ will let anything be
-// assigned to the variable on the left hand side... because `yes`
-// is always true
+// assigned to the variable on the left hand side... because the `yes` function
+// will always evaluate to true
 
 x:yes = 1
 x:yes = 'x'
@@ -166,20 +186,8 @@ z:odd = 4 / 2
 => Error: `z` can only be assigned values that `odd` returns `true` for....
 ```
 
-### More fun with type functions
-
-Since a type can be a function you can also negate types, as in "this variable
-can be anything except a `type`" for example this
-
-```
-not_int = a -> (typeof a) != int
-
-foo:not_int = 'a'      // Allowed
-foo:not_int = (-> 'a') // Allowed
-foo:not_int = 1        // Not allowed
-```
-
-A more pratical application of this would be to combine functions together:
+A more pratical application of this would be to combine functions together to
+create a condition that can clearly express the intended value of variable:
 
 ```
 profanity_en = ... // Function that gets a list of bad words in english
@@ -190,37 +198,25 @@ allowed_word = w -> not in profanity_en + profanity_es
 x:allowed_word = ...
 ```
 
-### Considerations
-
-built-in types as well as the types built with the "type constructor" are
-determined at compile time where the conditional type is a check done at runtime
-meaning that conditional types will cause runtime errors if a bad assignment is
-seen in the code.
-
-To account for this <a>Error Handling</a>
-
-## Type Function
-
-You can leverage the functional nature of _lang_ to create type functions on the fly as
-well
+In other words "conditional type" are like syntactic sugar that make it possible
+to turn something like this
 
 ```
-getData ->
-  first = prompt "What's your name?"
-  last = prompt "What's your last name?"
-  {first, last}
+cond_fn = a ->
+  if <some condition of (a)> is not true
+    error "${a} not allowed to be assigned"
+  a
 
-user = type getData
-stdout user
-
-=> "What's your name?"
-> Bobby
-
-=> "What's your last name?"
-> Sue
-
-=> user { first:'Bobby', last: 'Sue' }
+variable = cond_fn <potential value>
 ```
+
+Into one line with a much clearer syntax
+
+```
+variable:condition = <potential value>
+```
+
+For typical conditional assignment see the section on <a>if and conditions</a>
 
 ## Mutability
 
