@@ -17,12 +17,11 @@ a = x or 'default'
 ## Assign from condition
 
 ```
-x = 0 
+x = 0
 
 a = if x true false
 => false
 ```
-
 
 ## The Magical Dot
 
@@ -54,7 +53,7 @@ person = { first: 'Tony', last: 'Stark' }
 person.occupation = 'Superhero'
 person.alias = 'Iron Man'
 person.weapons = ['missles', 'powerbeam', 'lazers', 'machine guns']
-person.cheap_weapons -> filter (w -> startsWidth 'm') person.weapons
+person.cheap_weapons -> filter (w -> starts_with 'm') person.weapons
 person.pick_weapon = w -> find w person.weapons
 ```
 
@@ -62,9 +61,9 @@ The dot operator will let you create structures on the fly as well by omitting
 the braces
 
 ```
-person.name = 'James Bond'
-person.email = '007@mi6.gov.uk'
-=> person { name: 'James Bound', email: '007@mi6.gov.uk' }
+spy.name = 'James Bond'
+spy.email = '007@mi6.gov.uk'
+=> spy { name: 'James Bound', email: '007@mi6.gov.uk' }
 ```
 
 ### Types
@@ -74,37 +73,28 @@ When the dot operator is used on a type what _lang_ is doing is looking for a
 function that matches the name on the right hand side of the dot that can
 operate on the type on the left hand side of the dot
 
-For example
-
 ```
-find = f xs:list -> {
-  head, tail... = xs
+// Define a function called `find` that can operate on on any list
+find = f xs:list ->
+  head, ...tail = xs
   if (f head) head (find f tail)
-}
 
+// Here we're saying call `find` with list `[1, 2, 3]`
 [2,3,4].find (i -> i is 2)
 => 2
-```
-If you want to be more strict you can of course do that
 
-```
-find = f xs:list:int -> {
-  head, tail... = xs
-  if (f head) head (find f tail)
-}
-
-[1, "foo", false].find (i -> i % 2)
-=> Runtime error: Couldn't find a function named `find` that operates on ....
+// Which is equivalent to saying
+find (i -> i is 2) [2, 3, 4]
 ```
 
 What this is doing is basically reversing the parameter order and calling the
-function to the right hand side of the dot in a "infix" style.
+function to the right hand side of the dot.
 
 This type of expression isn't limited to list of collection style types but
 works on all types:
 
 ```
-uppercase = s:str -> {...}
+uppercase = s:str -> body
 
 // Calling it like this
 "hello".uppercase
@@ -114,7 +104,7 @@ uppercase "hello"
 
 
 // You're not limited to 1 parameter either
-foo = a b c:str -> {...}
+foo = a b c:str -> body
 
 "something".foo b a
 
@@ -131,9 +121,20 @@ another function.
 For example 
 
 ```
-str = "hello world, from the pipes"
+phrase = "hello world, from the pipes"
 
-x = str | rm ',' | strings.split_words | strings.uppercase
+x = phrase | rm ',' | strings.split_words | strings.uppercase
 => ["HELLO", "WORLD", "FROM", "THE", "PIPES"]
 ```
 
+You can use newlines to keep things readble
+
+```
+str = "hello world, from the pipes"
+
+x = str
+  | rm ','
+  | strings.split_words
+  | strings.uppercase
+=> ["HELLO", "WORLD", "FROM", "THE", "PIPES"]
+```

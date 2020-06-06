@@ -10,34 +10,33 @@ They should work as expected and the compiler should do the work of figuring out
 what type you intended
 
 ```
-1         => Integer
-1.4       => Float
-1_000_000 => Integer
-1/3       => Float
+1         => int
+1.4       => float
+1_000_000 => int
+1/3       => float
 
 // You should always have the final say though
-50:double => Double
+50:double => double
 ```
 
 ## String
 
 
-Single, Double, or use back-ticks for literal
+Single or double for typical stuff; and back-ticks for literals
 
 ```
-"hello"         => "hello"
-'hello "world"' => 'hello "world"'
-`hello 
-world`          => 'hello \n world'
+"hello"          => "hello"
+'hello "world"'  => 'hello "world"'
+`hello \n world` => 'hello \n world'
 ```
 
-When dealing with shell commands however, strings become a huge pain point; The
+When dealing with shell commands however, strings become a huge pita; The
 core library should have functions to help with this
 
 
 ```
 // From the explicit ones
-escapeDoubleQuote 'No "double quote please"'
+escape_double_quote 'No "double quote please"'
 -> 'No \"double quote please\"
 
 // To ones that guess

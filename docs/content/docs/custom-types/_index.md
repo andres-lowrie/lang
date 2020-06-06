@@ -1,3 +1,7 @@
+---
+title: "Custom Types"
+---
+
 # Custom Types
 
 ## Declaring
@@ -7,7 +11,7 @@ that you can use the `type constructor` syntax is:
 
 ```
 binding_name = type {
-  field_name: type
+  field_name:[<type>]
   ...
 }
 ```
@@ -15,12 +19,12 @@ binding_name = type {
 For example 
 ```
 person = type {
-  first: str,
-  last: str
+  first:str,
+  last:str
 }
 
 // or in one line if you like
-person = type { first: str, last: str }
+person = type { first:str, last:str }
 ```
 
 You can also declare a type and assign defaults to the fields
@@ -43,16 +47,16 @@ person = type {
 ```
 
 Now whenever a `person` is passed around, it will always have the field `last`
-set and the value will **always** be the string 'Doe; in other words when
-assigning values to a `type`, those values are immutable.
+set and the value will **always** be the string 'Doe'; in other words when
+assigning values to a `type`, those values are _immutable_.
 
-On the other hand if you just want to a type to use a shape, ie: the
+On the other hand if you just want a type to use a shape, ie: the
 actual _type_ of the fields doesn't matter, then you can use the `anything` type:
 
 ```
-person = type { 
-  first: anything,
-  last: anything
+person = type {
+  first:anything,
+  last:anything
 }
 ```
 
@@ -64,7 +68,7 @@ person = type { first, last }
 ```
 
 
-## Embedding
+## Composing
 
 You can build types by composing types together
 
@@ -84,42 +88,54 @@ cat = type { say: 'meow' }
 dog = type { say: 'bark' }
 catdog = type { cat, dog }
 
-=> Error: Ambiguous "say" field....
+=> Compile Error: Ambiguous "say" field....
 ```
 
-## Instantiating
+## Instantiation
 
 When you declare a `type` you're actually declaring a function.
 
 When you do
 
 ```
-person = type { first: str, last:str }
+person = type { first:str, last:str }
 ```
 
 You're declaring a function named `person` that takes an optional single
-paramter of type _"structure"_
+parameter of type _"structure"_.
+
+The singature for the type function looks this:
+
+```
+type -> a:struct -> b -> a
+```
+
 
 Meaning that to "instantiate" a person, you call the function just like any
-other function and pass in a structure to it
+other function and pass in a structure:
 
 ```
+person = type { first:str, last:str }
+
 developer = person { first: 'Jane', last: 'Doe' }
+
+dump type_of developer
+=> person
 ```
 
-The single paramter is always optional for a type so you could also do the
-following to acheive the same thing:
+The single parameter is always optional for a type so you could also do the
+following to achieve the same thing:
 
 ```
-developer = person
+developer = call person
 developer.first = 'Jane'
 developer.last = 'Doe'
 ```
 
-## Type Function
+## Dynamic Types
 
-You can leverage the functional nature of _lang_ to create type functions on the fly as
-well
+Given that the `type` construct is just a function, you can actually leverage
+that to create types on the fly.
 
 ```
 getData ->
@@ -127,8 +143,13 @@ getData ->
   last = prompt "What's your last name?"
   {first, last}
 
+// Here we say that want to define the structure `getData` returns as a custom
+// type
 user = type getData
-stdout user
+
+// Then we can run out program
+call user
+dump user
 
 => "What's your name?"
 > Bobby
@@ -145,7 +166,7 @@ The type system in _lang_ is not only optional but it also strives to be
 conditional; the idea is to allow the user to be able to express a condition
 which must evaluate to true before a value can be bound to a variable.
 
-The conditions are expressed via single paramter ("unary") boolean functions
+The conditions are expressed via single parameter ("unary") boolean functions
 
 For example:
 
@@ -178,12 +199,12 @@ odd = a -> not even
 // and "y" should only ever be a value that is odd
 
 x:even = 3
-=> Error: `x` can only be assigned values that `even` returns `true` for....
+=> Runtime Error: `x` can only be assigned values that `even` returns `true` ...
 
 y:odd = 1
 
 z:odd = 4 / 2
-=> Error: `z` can only be assigned values that `odd` returns `true` for....
+=> Runtime Error: `z` can only be assigned values that `odd` returns `true` ...
 ```
 
 A more pratical application of this would be to combine functions together to
@@ -203,155 +224,17 @@ to turn something like this
 
 ```
 cond_fn = a ->
-  if <some condition of (a)> is not true
-    error "${a} not allowed to be assigned"
+  if <some condition of a> is false
+    error "{a} not allowed to be assigned"
   a
 
 variable = cond_fn <potential value>
 ```
 
-Into one line with a much clearer syntax
+Into one line that shows more clearly shows the intent
 
 ```
 variable:condition = <potential value>
 ```
 
 For typical conditional assignment see the section on <a>if and conditions</a>
-
-## Mutability
-
-Structures are basically just `types` but you're declaring and instantiating
-them at the same time. 
-
-So when you do 
-
-```
-person = {
-  name: 'Jane',
-  last: 'Doe'
-}
-```
-
-You're actually doing this
-
-```
-person = mut type {
-  name: string,
-  last: string,
-} { name: 'Jane', last: 'Doe'}
-
-=> person { name: 'Jane', last: 'Doe' }
-```
-
-The difference between a structure and a type is the fact that the
-structure function will return a type that is _mutable_ and the type function
-returns one that isn't
-
-Which is what that `mut` function is doing there in last example
-
-## Ad-hoc Immutability
-
-```
-// At this point we don't know what we want to lock down
-// so we'll leave it open
-data = { 
-  truth: 4
-}
-
-propaganda = prompt "Share truth? 2 + 2 = " + data.truth
-
-=> Share truth? 2 + 2 = 4
-
-> 5
-
-data.truth = propaganda
-
-// Now we want to lock it down, so we can easily do that
-// from this point on in the program
-data = type data
-
-// thus we can modify the type anymore
-data.truth = 4
-
-=> Error: The type `data` shouldn't have its field `truth` ....
-```
-
-## Self referencing
-
-Things get real spicy when you want to access the thing you're declaring while
-you're declaring it, so _lang_ should have support for that
-
-```
-data = type { 
-  first: string,
-  last: string,
-  name: (-> data.first + data.last)
-}
-
-// Later
-
-d = data { 'Jane', 'Doe'}
-d.name
-
-=> 'Jane Doe'
-```
-
-## Embedding
-
-You can also embed structures within structures and keep references to the
-original structure
-
-```
-gun = { damage: 'high' }
-knife = { damage: 'med' }
-fist = { damage: 'low }
-
-weapons = { main: gun, secondary: knife, aux: fist }
-
-// Structures and are mutable by default
-
-train = a -> a.damage = 'high'
-
-train fist
-
-dump weapons
-=> weapons {
-=>   main: gun {
-=>     damage: 'high'
-=>   },
-=>   secondary: knife {
-=>     damage: 'med'
-=>   },
-=>   aux: fist {
-=>     damage: 'high'
-=>   },
-=> }
-```
-
-If you don't want references you can `copy` structures instead
-
-```
-x = { foo: 'bar' }
-
-y = { x: copy x }
-y.x = 'not bar'
-
-stdout x y
-=> x { foo: 'bar' }
-=> y { foo: 'not bar' }
-```
-
-You can invert the default behavior natrually with 
-
-```
-config.struct\_embed\_use\_copy {
-  // ...
-}
-
-// Or
-
-config.no.struct\_embed\_use\_copy {
-  // ...
-}
-```
-

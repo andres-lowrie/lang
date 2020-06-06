@@ -12,93 +12,112 @@ There's no `keyword` for declaring functions; they're treated like any other
 variable. Instead the interpreter will look at the declaration and determine that
 the variable you assigned is of the function type.
 
-The syntax is
+There are several ways to declare functions based on _arity_ and type specification
+
+tl;dr: syntaxes are
+```
+function_name -> <body>
+function_name = <parameter> -> <body>
+function_name = ([<parameter>, ...]) -> <body>
+
+where
+  <body>      is an expression, or a <type> followed by a newline
+              and an expression
+  <parameter> a binding with optional type ie: "a or a:<type>"
+```
+
+### Syntax forms
+
+#### Nullary
+
+The most basic form of function in _lang_ is a function that takes no
+parameters. These can be expressed like
 
 ```
-function_name = parameters ... -> body
-function_name -> body
+my_func -> 1 + 2
 ```
 
-### The thin arrow
-
-There isn't a whole bunch of ceremony to declaring functions: the only thing you
-really need is the _thin arrow_ and an assignment binding
+Since this is basically a value assignment, the question that forms is "What's
+the difference between these?":
 
 ```
-add = a b -> {
+my_func -> 1 + 2
+my_func = 1 + 2
+```
+
+difference is that the first expression won't run and do the math operation
+until `my_func` is called, while the second expression will run as soon as it
+is parsed So, when you want a side-effect to occur (which you usually don't)
+you can use the first form.
+
+A more practical usage this form is to check the value of something at
+runtime, something that is not static or mutable for example
+
+```
+getStatus -> http get https://api.com/status
+```
+
+here `getStatus` will go and fetch that content when called and since the
+status of the api can change at Runtime, it makes sense to use a function
+instead of a value
+
+#### Unary
+
+These are functions that only take one parameter. They look like this
+
+```
+and_one = a -> a + 1
+and_one = a:int -> a + 1
+and_one = a:int -> int
+  a + 1
+```
+pretty straight forward
+
+#### Variadic
+
+Any function takes more than one parameter _lang_ calls _"variadic"_, and they
+look like this:
+
+```
+add = (a, b) -> a + b
+add = (a:int, b:int) -> a + b
+add = (a:int, b:int) -> int
   a + b
-}
 ```
 
-This tells the interpreter that the left side of the arrow are parameters and the
-right side of the arrow is the body of the function.
-
-a function can be declared to take 0 or any number of parameters
-
-```
-// None (or any depending on configuration)
-add -> {}
-
-// 1
-add = a -> {}
-
-// Many
-add = a b -> {}
-add = a b c -> {}
-
-// 3 defined, and the rest into a list
-// _lang_ calls this "variadic params"
-add = a b c ...d -> {}
-```
-
-More info on <a ref="#spread">variadic params</a>
+The difference being the parenthesis; they're required when declaring a
+function that has more than 1 parameter
 
 
 ### Returning
 
-The return is implicit as in the last expression will be returned,
+Everything in _lang_ is an expression, and so the _return_ is always the last
+line of a function:
 
 ```
-add = a b -> {
+add = (a, b) ->
   a + b
-}
 ```
 
 but you can also use the `return` keyword if you like
 
 ```
-add = a b -> {
-  return a + b
-}
-```
-
-### Types
-
-You can crank up the strictness as well
-
-```
-// Strict return but lax parameters
-add = a b -> int {
+add_odds = a b ->
+  if a % 2
+    return a + b
   a + b
-}
-
-// Strict parameters but lax return
-add = a:int b:int -> a + b
-
-// Full strictness
-add = a:int b:int -> int {
-   return a + b
-}
 ```
+
+useful when breaking out of a function early
 
 ### Multiple returns
 
-Functions can return multiple things instead of just one thing.
+Technically, they can't return multple things return a _tuple_ of things;
+however the synax provides sugar to do so
+
 
 ```
-name -> {
-  'John, 'Smith'
-}
+name -> 'John, 'Smith'
 
 first, last = name
 ```
@@ -107,67 +126,9 @@ You can specify the types of those as well like any other function just need
 some commas in the right places
 
 ```
-name -> str, str {
+name -> (str, str)
   'John', 'Smith'
-}
 ```
-
-You can ignore returns you don't care about using the underscore `_`:
-
-```
-name -> 'John', 'Smith'
-
-_, last = name
-```
-
-## Shorthand
-
-Ergonomics are important
-
-You only need the `=` operator when your function takes parameters.
-
-```
-// Takes no parameters so no `=` is needed
-give_a -> { "a" }
-```
-
-The _braces_ are completly optional when not specifying a return type:
-
-```
-give_a -> 'a'
-```
-
-You can loose the braces all together if you want
-
-```
-// No params
-give_a -> 'a'
-
-// Some params
-add = a b -> a + b
-
-// Sometimes you just need that little extra 
-add = user addr perms ->
-  user + addr + perms
-
-
-// I mean this is technically valid but don't do this
-add = a b c d e f g h i j ->
-  a + b + c + d + e + f + g
-  + h + i + j
-```
-
-You can use shorthand form for functions with multiple retuns as well:
-
-```
-yes_no -> true, false
-```
-
-By default, the interpreter will create a <a>block</a> around anything on the
-right hand side of the thin arrow if you don't specify one.
-
-The only time you're required to specify one (a block) is when you want to be
-explicit about the return of a function
 
 ## Lambdas
 
@@ -177,26 +138,34 @@ assigned to a variable), you just have to surround your function with parenthesi
 The syntax is:
 
 ```
-([params] -> body)
+(-> <body>)
+(<parameter> -> <body>)
+((<parameter>,...) -> <body>)
+
+where
+  <body>      is an expression, or a <type> followed by a newline or semi-colon
+              and an expression
+  <parameter> a binding with optional type ie: "a or a:<type>"
 ```
 
-where `params` are optional.
-
-For example
+For example, a lambda with no parameters 
 
 ```
-say = something -> stdout something
+dump (-> "Hello World")
 
-say (-> "Hello World")
+=> "Hello World"
 ```
 
-If your lambda needs params, then you can define them the same way you do in
-any other function
+If your lambda needs parameters, then you can define them the same way you do
+in any other function
 
 ```
 nums = [1, 2, 3]
 
-sum = fold (acc i -> acc + i) nums
+odds = filter (a -> a % 2) nums
+
+// More than 1 parameter, requires parenthesis
+sum = fold ((acc, i) -> acc + i) nums
 => 6
 ```
 
@@ -204,11 +173,11 @@ You can also have lambdas with multiple retuns by specifying returns with
 commas
 
 ```
-add = a b -> a + b
+add = (a, b) -> a + b
 
 f = (-> 2, 4)
 
-add f
+add (f)
 
 => 6
 ```
@@ -224,18 +193,17 @@ function_name arg1 arg2 argN ...
 For example
 
 ```
-add = a b -> a + b
+add = (a, b) -> a + b
 
 add 2 2
 => 4
 ```
 
-You can use parenthesis to be explicit about which parameters go to which
-function
+You can use parenthesis to be explicit about calling versus passing functions
 
 ```
-add = a b -> a + b
-sub = a b -> a - b
+add = (a, b) -> a + b
+sub = (a, b) -> a - b
 
 // Explicit
 value = add 2 (sub 3 1)
@@ -246,36 +214,34 @@ value = add 2 sub 3 1
 => Error: The function `sub` wants to 2 parameters, received....
 ```
 
-^ That error message can be confusing because of how _lang_ tries to guess at
-what you want.
+### do blocks
 
-In this particular case, the function `add` takes two parameters of any type
-which causes _lang_ to pass the value "2" and the function "sub" as the
-parameters to add.
-
-Then the values of "3" and "1" are actually passed to `add` as "rest
-parameters".
-
-Finally, when _lang_ tries to run `add` it complains because the function `sub`
-is missing the 2 parameters it declared.
-
-The "Explicit" version is declared in such a way that tells _lang_ that `add`
-should actually get the value from the result of calling `sub` with the values
-"3" and "1"
-
-_lang_ is trying to be ulta dynamic out of the gate with...
-
-### Auto args
-
-By default, you can actually pass anything into a function regardless of the
-"arity" of your function, and _lang_ will try and make the best of it
-
-For example
+Sometimes you want to do run a function as soon as you define it, for that you
+can use the `do` syntax
 
 ```
-// You can have a function declared like this meaning that it takes no
-// parameters
-noop -> {}
+fav_food = do
+  got = prompt "What's your favorite food? Use commas if needed"
+  first (split ',' got)
+```
+
+You can define specify types return types as well
+
+```
+fav_food = do:str
+  got = prompt "What's your favorite food? Use commas if needed"
+  first (split ',' got)
+```
+
+### Variadic Parameters
+
+#### Capture
+
+You can define function that takes `n` number of parameters, by using the
+ellipses
+
+```
+noop -> ...
 
 // And call it like it expects
 noop
@@ -286,51 +252,22 @@ noop 1 2 3
 => Nothing
 ```
 
-_lang_ refers to this "auto args"
-
-Basically _lang_ will accept any _extra_ parameters passed into a
-function and assign them to the <a ref="">list</a> variable `args` in your function body
+If you want to assign the parameters to a variable you can do that as well by
+adding the variable name to the end of the ellipses
 
 ```
-add -> {
-  stdout args
-}
-
-add 1 2 3 4
-=> [1, 2, 3, 4]
+numbers -> ...nums
 ```
 
-If you want to assign another name to `args` you can do it using the variadic
-syntax
-
-```
-add = ...nums -> {
-  // _lang_ will assign args to "nums" in this case
-  // nums = args
-}
-```
-
-Of course you can increase the strictness and specifically say "no, you take
-no parameters dammit" and turn off the auto\_args feature all together
-
-```
-coinfig.no.auto_args {
-  add -> {}
-
-  add 1 2
-  => Error: `add` takes no parameters, given....
-}
-```
-
-### Spread
+#### Spread
 
 You can also "spread out" a list when calling a function by sending each item in
 a list to the function as a separate parameter
 
 ```
-add a b c -> a + b + c
+add (a, b, c) -> a + b + c
 
-stuff = [1, 2, 3 ]
+stuff = [1, 2, 3]
 
 add ...stuff
 => 6
@@ -342,25 +279,24 @@ One of the core goals of _lang_ is to let you turn on the strictness as you
 need it to allow you to "code jazz" while your working out an idea but then
 later turn up the "type-y-ness" when/if you want
 
-One of the ways to do this is by using the built pattern matching functionality
-to define a function with different arities and return types (_lang_ calls this
-"signatures")
+One of the ways to do this is by using the built in pattern matching
+functionality to define a function with different arities and return types
+(_lang_ calls this "signatures")
 
 For Example:
 
 ```
-log_a_thing = f -> {
+log_a_thing = f ->
   stdout "Start"
   f
   stdout "End"
-}
 
-log_a_thing = fns:list -> {
+log_a_thing = fns:list ->
   stdout "Run list"
   map log_a_thing fns
   stdout "Finish list"
-}
 
+// Then we can call it
 log_a_thing (-> stdout 'One')
 => 'Start'
 => 'One'
@@ -393,67 +329,31 @@ log_a_thing 1 2 3
 => Error: `log_a_thing` expects either 1 parameter....
 ```
 
-Of course you can fix this by just adding the "catch all" signature in your definition:
+Of course you can workaround this by just adding the "catch all" signature in
+your definition:
 
 ```
-log_a_thing -> {...}
+log_a_thing -> ...
+  // do something here
 ```
 
-Now _lang_ will let either 1 function, a list of functions, or anything
+Now _lang_ will let either 1 function, a list of functions, or anything be
+passed into it and run the function that matches the signature
 
 
 ## Functional
 
 At it's core, _lang_ is a functional language meaning that certain features
-are baked in
+are baked in, in general function are first class citizens; meaning they're
+basically any other value and you compose them, pass them around, etc etc.
 
-### Function are first-class citizens
-
-Which means you can pass them like any other "value"
-
-As a parameter
-
-```
-add = a b -> a + b
-
-n -> rand 1 10
-
-add n 4
-```
-
-Return them and declare them in other functions
-
-```
-add = a b -> a + b
-sub = a b -> a - b
-
-add2Sub3 = a -> compose (add 2) (sub 3)
-
-add2Sub3 1
-=> 0
-```
-
-On the fly as values pretty much anywhere, they're basically any other value
-
-```
-nums = [1..100]
-
-add_inc = map (i -> + i) nums
-=> [function, function, func....]
-
-every (el, idx -> el idx) add_inc
-=> [2, 4, 6, 8, ....]
-```
 
 ### Auto curry / partial application
 
-Just as how when you pass "extra" parameters to a function and _lang_ does you a
-solid and presents them to you in your function, you pass a function "less"
-parameters than it expected, _lang_ will automatically create a partially
-applied function for you
+_lang_ will auto curry functions if supplied less parameters then expected
 
 ```
-add = a b -> a + b
+add = (a, b) -> a + b
 
 add2 = add 2
 
@@ -472,7 +372,7 @@ You can specify which parameters to partialy apply using the underscore `_` as
 well:
 
 ```
-address = num street country -> { join args ' ' }
+address = (num, street, country) -> join [num, street, country] ' '
 
 missing_street = address 123 _ 'USA'
 
@@ -480,34 +380,22 @@ complete_address = missing_street 'Main St.'
 => '123 Main St. USA'
 ```
 
-Like 9 out of 10 times this is great and you want this, but every now an then
-you don't want to auto curry; you can disable it ad-hoc on the fly via a
-<a>config block</a>
-
-```
-add = a b -> a + b
-
-// Temporarily disable auto-curry
-config.no.auto_curry {
-  add2 add 2
-}
-
-=> Runtime error: add wanted 2 parameters, received only 1 on line ....
-```
-
-### Auto infix
+### Infix
 
 Just about everything in _lang_ is a function, including most operators
 
-For example the operator `+` is actually a function that has a definition
-_similar_ to this
+For example the operator `+` is actually a function that has a definition like
+this
 
 ```
-add = a:num b:num -> a + b
-+ = add
+add = (a:num, b:num) -> a + b
++:infix = add
 ```
 
-Meaning that  the following two expressions are equivalent
+`infix` is a built-in type that tells _lang_ that a function can be called with
+infix notation
+
+Meaning that the following two expressions are equivalent
 
 ```
 // Called like any other function
@@ -517,23 +405,10 @@ Meaning that  the following two expressions are equivalent
 1 + 1
 ```
 
-_lang_ will automatically guess if your function is in infix position based on
-the context of the parser
-
-You can explicity tell the parser that a function is in infix position by using
-the infix operator which is `<function_name>` for example
-
-```
-// Let the parser guess at positioning
-1 + 1
-
-// Tell the parser explicity that `+` is in infix position
-1 <+> 1
-```
-
 #### Order of operations / precedence
 
-Examples of auto\_infix and alternatives
+_lang_ is left associative, in order to make not so, you have to use
+parenthesis
 
 ```
 // The following is using the `divide` and `plus` function in infix position
@@ -541,17 +416,15 @@ Examples of auto\_infix and alternatives
 => 5
 
 // You could be explicit if you liked to
-4 </> 4 <+> 4
-=> 5
+4 / (4 + 4)
+=> 0.5
 
-// Or you can do it without infix
+// without infix
 + 4 (/ 4 4)
 => 5
 ```
 
-#### With examples `auto_curry`
-
-Examples of auto\_infix and auto\_curry working hand and hand
+Examples of infix and auto\_curry working hand and hand
 
 ```
 x = 4 /

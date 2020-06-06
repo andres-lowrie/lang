@@ -5,10 +5,10 @@
 Very little ceremony when it comes to variable assigning
 
 ```
-foo = 1             => foo is the number 1
-foo = 'something'   => foo is the string 'something'
-foo = { bar: 'bas'} => foo is a structure
-foo = a b -> a + b  => foo is a function
+foo = 1                => foo is the number 1
+foo = 'something'      => foo is the string 'something'
+foo = { bar: 'bas'}    => foo is a structure
+foo = (a, b) -> a + b  => foo is a function
 ```
 
 Basically it's 
@@ -44,10 +44,6 @@ Match things on the left side of the `=` with things from the right
 
 ```
 a, b, c = 1 2 3
-
-// or 
-
-a, b, c = 'a' 'b' 'c'
 ```
 
 You can also ignore things by using the underscore `_` in the left
@@ -96,31 +92,40 @@ a, b, c = data
 a:int, b:int, c:int = data
 ```
 
-You can also either ignore the things in the list you don't care about or
-capture them as a list in a new varialbe
+You can capture things into lists by using the ellipsis
 
 ```
-data = [1, 2, 3, 4, 5, 6, 7]
+data = [1, 2, 3, 4, 5, 6]
 
+// capture from the back
 a, b, c, ...rest = data
 
-a
+dump a b c
+dump rest
+=> 1 2 3
+=> [4, 5, 6]
+
+// capture from the front
+[...front, last] = data
+dump front last
+=> [1, 2, 3, 4, 5]
+=> 6
+
+// captre from the middle
+[front, ...middle, back] = data
+
+dump front
+dump middle
+dump rest
 => 1
-
-b
-=> 2
-
-c
-=> 3
-
-rest
-=> [4, 5, 6, 7]
+=> [2, 3, 4, 5]
+=> 6
 ```
 
 ### Functions
 
-If a function returns multiple things you can assign results to
-multiple variables
+If a function returns iterable types (lists, structures, tuples) you can assign
+results to multiple variables
 
 ```
 nautical -> 'port', 'starboard'

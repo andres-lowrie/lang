@@ -4,78 +4,60 @@ title: "Control Flow"
 
 # Control Flow
 
-_lang_ is a functional, expression based language so there really isn't typical
-"control flow" per say, but the syntax allows you to mimic it
+_lang_ only ships with 1 typical control flow structure, and that's the
+quintessential `if`.
 
 ## if
 
-_lang_ only ships with 1 conditional function, and that's the
-quintessential `if`
-
-It's defined like
+However it's not a statement or special syntax it's just a function, it's
+defined like this
 
 ```
-if = grammar.eval true grammar.runnable grammar.optional grammar.runnable
+if = (true, branch:expression, _) -> branch
+if = (false, _, branch:exression) -> branch
 ```
 
-but before we dive into that let's look at from a syntax perspective
+Basically it uses the pattern matching to call a different function (or
+"branch") depending on the value of some condition; this pattern matching
+approach allows _lang_ to use `if` like any other function which comes with
+some nice benefits.
 
 ### Do something if something is true
 
-The most simple thing to check is a boolean value directly
+The most simple case
 
 ```
-if true {
+if true
   // do something
-}
 ```
 
-You can't use the `=` operator because that's used by the compiler but you can
-use the `is` function to compare things
+If you want to compare something, then you can use the equality operator
+(ummm actually technically it's a function \*pushes up glasses)
 
 ```
-a = 'a'
+something = 1
 
-if a is 'a' {
-  stdout "it's an a"
-}
-```
-
-You can also do "truthy" and "falsey" style 
-
-```
-yes = 'has a "none zero" value'
-
-if yes { 
-  stdout "Yaaaass!"
-}
-
-yes = ''
-
-if !yes {
-  stdout "yes is falsey"
-}
+if something == 1
+  stdout "something is 1"
 ```
 
 ### Do something if multiple things are true
 
-You can compare multiple things ... <a
-href="https://img.memecdn.com/when-im-waiting-for-someone-to-react-to-my-joke_gp_1906935.webp">
-if </a> .... you like 
+You can compare multiple things ...
+[if]("https://img.memecdn.com/when-im-waiting-for-someone-to-react-to-my-joke_gp_1906935.webp")
+... you like using the the `and` funciton as well as the `or` function
 
 ```
 yes = true
 no = false
 
 // both
-if yes and no {
+if yes and no
   stdout "won't make it here"
-}
 
 // either
-if yes or no {
+if yes or no
   stdout "Will see these"
-}
 ```
 
 You can add as many "conditions" as you like
@@ -85,109 +67,115 @@ a = 1
 b = 2
 c = 3
 
-if a and b and c { 
+if a and b and c
   stdout 'all 3 are truthy'
-}
+```
+
+However since all these "operators" are just functions returning things, you
+can also store conditions and create more expressive code
+
+```
+a = 1
+b = 2
+c = 3
+
+cond1 = a == 1 and b != 4
+cond2 = cond1 and c == 3
+
+if cond1 and cond2
+  stdout 'all 3 are truthy'
 ```
 
 ## What about else
 
-If we look back at how the `if` function is declared, you'll see that the second
-part of the function is an "optional" runnable. That runnable is what _lang_
-will run if the condition is not true
-
-In other words
+`if` has a signature that will ignore the first expression passed to it and run
+the second when the first argument is false
 
 ```
-if false {} { // this one will run}
+if false <expression1> <expression2>
 ```
 
-So if you wanted to do something when the condition isn't true out of the box
-you could do
+Given that there aren't any braces when calling functions, the 'out of the box'
+"if/else" requires the use of `do` block to denote expressions
+
 
 ```
 a = rand bool
 
-if a {
-  // do if a is true
-} {
-  // do something if a is false 
-}
+if a
+  do stdout 'a is true'
+  do stdout 'a is false'
 ```
 
-But that looks weird, with the bracket syntax. It looks natrual without it
+This is by design, _lang_ doesn't ship with an `else` on purpose, it becomes
+too easy to create nested code that is really hard to read, instead it wants
+you to pass in an expression
 
 ```
 a = rand bool
 
-do_it -> {}
-dont_do_it -> {}
+do_it -> stdout "doing it"
+dont_do_it -> stdout "not doing it"
 
-
-if a do_it dont_do_it
+if a
+  do do_it
+  do dont_do_it
 ```
 
-If that still looks weird, we can always just create an `else` function and use
-that instead
+Here's the type of thing this system tries to avoid
 
 ```
-else = block:grammar.runnable -> block
-
-a = rand bool
-
-if a {
-  // do if a is true
-} else { 
-  // do if a is not true
-}
+if condition
+  if another_condition
+    do_something
+  else
+    another_thing
+else
+  if yet_another_condition
+    blah
+  else
+    more_nonsense
 ```
 
-That works because `else` is a function that takes a runnable and returns it so
-basially it works like a passthrough
-
-<a>more info on hacking</a>
-
-## What about `else if`
-
-We can build on the concepts above and instead define `else` like this
+Reading code that looks like this sucks, _lang_ wants you to keep a left
+aligned clean "line of sight". Given that conditions can be stored into
+variables, `if` is just any other function, and functional constructs like
+partial application are availalbe; it's pretty easy to take something that
+would look like the above code and make it something much easier to read
 
 ```
-else -> if (args.first is_a 'grammar.runnable') args.first (grammar.until !'else')
+nested_happy = if _ do_something another_thing
+nested_sad = if _ blah more_nonsense
 
-a = rand bool
-
-if false {
-  stdout "never do this"
-} else if a {
-  stdout "do this if a is true"
-} else {
-  stdout "do this if a is false"
-}
+if condition
+  do nested_happy another_thing
+  do nested_sad yet_another_condition
 ```
 
-This works because `else` is leveraging the parser here and will slurp up everything
-passed to it until it reaches an `else` statement
+## Sugary goodness
 
-## Well, I like `elif`
+Given the "line of sight" initiative, _lang_ ships with a bunch of functions to
+make reading conditional easier
 
-If you're into python's elif ... I mean you can define your functions to mimic
-that style instead
+### unless
+
+The inverse of `if`, a nice shortcut to do say "do this unless this is true"
 
 ```
-elif = if
-else = block:grammar.runnable -> block
+cond = rand bool
 
-a = rand bool
-
-if false {
-  stdout "never do this"
-} elif a {
-  stdout "do this if a is true"
-} else {
-  stdout "do this if a is false"
-}
+unless cond
+  stdout "cond evaluated to false"
 ```
 
-_lang_ let's you define functions that make sense for you
+### equality functions
 
-<a>More info on hacking</a>
+All of these mean the same thing, "both are equal"
+
+```
+a == b  // both are equal
+a is b  // both are equal
+a eq b  // both are equal
+```
+
+`is` is an alias for 
