@@ -32,6 +32,7 @@ The functional ones
 maybe    => Maybe
 nothing  => Nothing
 just     => Just
+either   => Either
 ```
 
 The collection 
@@ -45,7 +46,7 @@ tup    => Tuple
 The one everything defaults to
 
 ```
-anything => Anything
+any => Anything
 ```
 
 ### Lists

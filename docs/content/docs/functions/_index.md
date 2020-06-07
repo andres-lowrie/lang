@@ -22,7 +22,7 @@ function_name = ([<parameter>, ...]) -> <body>
 
 where
   <body>      is an expression, or a <type> followed by a newline
-              and an expression
+              (or semi-colon) and an expression
   <parameter> a binding with optional type ie: "a or a:<type>"
 ```
 
@@ -180,6 +180,17 @@ f = (-> 2, 4)
 add (f)
 
 => 6
+```
+
+Sometimes you just need that need that little extra expression in a lambda and
+breaking it out into multiple lines is overkill, for those cases you can ues
+the semi-colon `;` to denotes expressions
+
+```
+some_stuff = [{}, {}, {}]
+
+// A janky way through dump things out without stopping the program
+props = stuff.map (i -> dump i; i.prop)
 ```
 
 ## Calling a function

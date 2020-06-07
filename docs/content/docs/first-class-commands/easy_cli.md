@@ -9,58 +9,68 @@ As expected you can access the arguments via a list of everything passed into
 the program via the `argv` list:
 
 ```
-#!/bin/lang
-
-stdout args
+stdout argv
 ```
 
 Calling it like this
 
 ```
-$> ./my_cli a -b --c "d" 'e=f' g
+$> ./my_cli -globalflag a -b --c "d" 'e=f' g 1
 
-=> ["a", "-b", "--c", "d", "e=f", "g"]
+=> ["-globalflat", "a", "-b", "--c", "d", "e=f", "g", 1]
 ```
 
-However the real nicities come with the parsing that's built in:
+However the real nicities come with the parsing that's built into _lang_ using `argp`; 
 
 ```
-stdout join [args.flags, args.parameters, args.positional] \n
-
-=> "b"
+pretty argp
 =>
-=> {c: "d", e: "f"}
-=>
-=> ["a", "g"]
+{
+  flags: {globalflag: true},
+  positional: ["a", "g", 1],
+  a: {
+    flags: {b: true},
+    parameters: {c: "d", e: "f"},
+  },
+  g: {
+    positional: [1]
+  }
+}
 ```
 
-The built in parsing allows you to easily define different style of cli tools
-easily. For example, creating the _sub-command_ style cli can be very intuitive
+`argp` is a structure that parses out argv into logical groupings of `flags`,
+`positional`, and `parameters`. It has built-int support for "sub-command"
+style cli calls as well in that it will created nested structures for any
+positional arguments that are not numbers
+
+The built in parsing allows you to easily define different style of cli tools.
 
 ```
-#!/bin/lang
-
-make_call ...args -> {
+// Define our functions to act like sub-commands, we'll add them to a structure
+// so we can refer to using a string value
+cmd.make_call = args ->
   stdout a
   stdout 'params: ' + args.parameters.keys.join ', '
   stdout 'values: ' + args.parameters.values ', '
-}
 
-do_something = a -> {
+cmd.do_something = args ->
+  a = first args.positional
   stdout 'doing something: ' + a
-  a ...args
-}
+  cmd[a] args[a]
 
-cool -> {
+cmd.cool = args ->
   stdout "With ask: " + args.first
   stdout "params: " + args.parameters.keys.join ', '
-}
 
-action, opts = args
-action ...opts
+// Pull out the sub-command and the stuff passed to it
+action = argp[0]
+params = argp[action]
+
+// And call it
+cmd[action] params
 ```
 
-Calling it could look like this
+From the command line it could look like this
 
 ```
 $> ./app make_call --type x --with-thing abc
@@ -106,8 +116,3 @@ out, err = bogus
 to_file out /output
 to_file err /err
 ```
-
-That being said, you can use configuration blocks to have _lang_ setup stdout
-and stderr files automatically by using the config functions:
-`config.stderr.to_file` and `config.stdout.to_file` respectively. This will
-cause _lang_ to append output to the paths supplied to those functions

@@ -25,27 +25,33 @@ stdout readme
 => "README.md"
 ```
 
-_lang_ supports types which means that you can run commands and get things out that are not just "text":
+This is because `|` in _lang_ is the [pipe]() operator.
+
+_lang_ supports types which means that you can run commands and get things out
+that are not just "text":
 
 ```
+import strings
+
+
 // What you would expect
-x = fd --type d . 'docs/content'
+x = fd --type d '.' docs/content
 
 stdout x
 => "docs/content/docs\ndocs/content/basics\ndocs/content/....
 
 
 // coerce into types instead
-x = split strings.newline fd --type d . 'docs/content'
+x = split strings.newline (fd --type d '.' docs/content)
 
 stdout x
 => [ "docs/content/docs", "docs/content/docs/basics", "docs/c...
 
 
 // Express what you want to express
-x = split strings.newline fd --type d . 'docs/content'
+x = split strings.newline (fd --type d '.' docs/content)
   | first
-  | split /
+  | split '/'
   | last
   | tr a-z A-Z
 
@@ -54,27 +60,31 @@ stdout x
 ```
 
 This works because a command is just a function and thus you can use commands
-like any other function in _lang_ and leverage the features of _lang_ to run
-commands
-
+like any other function in _lang_ and leverage its features
 
 ```
+import sys
+
+split_words = import strings
+
+// Here we make a partially applied function out of the grep command
 g = grep -irn
 
 // Grab a random word from a line ending in a random letter
 pattern = (rand a..z) + $
-lines = split_words (g pattern cwd)
-pos = (a b -> rand b a) len lines
-
+lines = split_words (g pattern sys.cwd)
+pos = ((a, b) -> rand b a) (len lines)
 
 stdout lines[pos 0]
 ```
 
 ## Environment Variables
 
-You can read and set environment variables from using the `env` function
+You can read and set environment variables from using the `sys.env` function
 
 ```
+import sys/env
+
 // Read
 user = env 'user'
 
@@ -85,7 +95,7 @@ env 'user' Jack
 ## Standard Error and Standard Out
 
 By default, when _lang_ determines you're using a command as a function, you
-can use <a>multiple returns</a> to capture output and error:
+can use [multiple returns]() to capture output and error:
 
 ```
 out, err = bogus
@@ -116,18 +126,6 @@ code
 => 127
 ```
 
-
-
-You can disable the multiple returns with a config block which will
-cause the return to just be the return code
-
-```
-config.no.multi_return_command { 
-  bogus
-  => 127
-}
-```
-
 # Commands are just functions
 
 When you call a command in a script, _lang_ will look for it in the scope
@@ -137,65 +135,60 @@ command in the `PATH` set in the runtime environment.
 If it finds it there, it will then create a function on the fly like this:
 
 ```
-name_of_command_it_found = ...a:string -> string, string, int  {}
+name_of_command_it_found = ...a:str -> (str, str, int); <body>
 ```
 
 Which will allow it to act like any other function
 
-More about how the <a> lookup scope</a> works
+More about how the [lookup scope]() works
 
-## The magical cli operator functions 
+## The magical cli arguments functions
 
 You'll notice that in the above examples the use of the aseterix `*` and hyphen
-`-` but _lang_ isn't doing math, no multiplicaton or subtraction
+`-` and slashes `/` but _lang_ isn't doing math, no multiplicaton , subtraction
+or division
 
-That's because those functions are defined to be syntax aware like this
-
-```
-pub - = (->
-  t -> not any [-, grammar.space]
-  l:t, r:t -> sub l r
-)
-```
-
-This allows for the hyphen to double as the string character `-` and the
-subtract function based on how it appears in the script
-
-For example:
+That's because operators in _lang_  are functions are called with by spacing
+out each argument, thus when a command is run say `ls` the flags and options
+becomes part of the argument:
 
 ```
-// Here the hyphen has a space on either side of it and so _lang_ will call the
-// `sub` function and it will do what you expect
-1 - 1
-=> 0
+// `-al` is being sent as the string `-al`
+ls -al '.' 
 
 
-// However this will try to call the function `1` with the string argument `-1`
-// which will result in an error
-1 -1
-=> Runtime Error: The function `1` does not take arguments....
+// Here the space between the hyphen is seen as the subtract infix function
+// this will crash
+ls - al '.'
+```
 
+So, when using hyphens, slashes, and asterisks special care has to be taken
+to mind the spacing between values:
 
-// The same applies for functions that have been bound to variables
-a -> 1
-b -> 1
-
-a - b
-=> 0
-
-
-a- b
-=> Runtime Error: No function named `a-` found in module....
+```
+some/path/here      => a str
+some / path / here  => a Compile time Error (unless those variables are numbers)
+*sup                => a str
+* sup               => a partially applied function
 ```
 
 **What about negative numbers?**
 
-The `math` module has a `neg` function that will return the negative
-value of the number passed to it:
+That's the trade-off, _lang_ doesn't support expressing negative numbers
+"literally", calling
+
+```
+1 + -1
+
+// will result in a concated string
+=> str "1-1"
+```
+
+
+Instead use the `math` module which has a `neg` function that will return the
+negative value of the number passed to it:
 
 ```
 1 - neg 1
 => 2
 ```
-
-You can disable this via the config block `config.cli.no.auto_flags`

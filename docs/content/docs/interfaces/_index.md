@@ -7,41 +7,38 @@ title: Interfaces
 In _lang_ an "interface" is a way to ensure that a certain set of functions are
 available for a given type
 
-The syntax is 
-
-```
-binding_name = interface grammar.block:interface
-```
-
 For example, say you have some types defined like this:
 
 ```
 automobile = type {
-  make: string,
-  model: string,
-  name: (-> automobile.make + automobile.model)
+  make: str,
+  model: str,
 }
+name = a:automobile -> "{a.make}, {a.model}"
 
 person = type {
-  first: string,
-  last: string
-  name: (-> person.first + person.last)
+  first: str,
+  last: str,
+  name: str,
 }
+name = a:person -> "{a.make}, {a.model}"
 
 animal = type {
-  name: string
+  name: str
 }
+name = a:animal -> a.name
 
 alias = type {
   name: list:str
 }
+name = a:alias -> join a.name " "
 ```
 
 And you want to make a function that prints out the name of each of these
 types, you could write
 
 ```
-print = a -> "a's name is: {{a.name}}"
+print = a -> "a's name is: {name a}"
 ```
 
 This is fine up until the you pass in something that doesn't have a "name"
@@ -54,23 +51,37 @@ print no_name
 => Runtime Error: `no_name` doesn't have a field or function `name`....
 ```
 
-To prevent this behavior, you could define an `interface`:
+In the case outlined above you could prevent this by changing your `print`
+function to use the dot `.` notation instead (ie: `{a.name}`) since that will
+look for both functions or field names, but... you're only half solving the
+problem since you could still pass in a struct that doesn't have a `name` field
+associated to it.
+
+To prevent this error from happening , you could define an `interface` instead:
 
 ```
-nameable = inteface { name }
+nameable = interface { name }
 
-print = a:nameable -> "a's name is: {{a.name}}"
+print = a:nameable -> "a's name is: {name a}"
 ```
 
-Now only types that have a function named "name" would be allowed as arguments
-to the `print` function
+Now only types that have a function `"name"` associated to it will be allowed as
+arguments to the `print` function, if you try and run that program now, it will
+fail at compile time instead of runtime
 
-## The block argument
+```
+no_name = { foo: 'bar' }
 
-The block that the `interface` function accepts is very expressive and allows
-for a fine grained level of strictness.
+print no_name
+=> Compile Error: `no_name` doesn't have a function `name`....
+```
 
-The most lax version of it is one where only the function names are defined:
+## The shape parameter
+
+The `interface` function take a structure as its only parameter that takes on
+many shapes.
+
+The most lax version of it is one where only the names are defined:
 
 ```
 fooer = interface {
@@ -80,28 +91,28 @@ fooer = interface {
 }
 ```
 
-This is saying that a "fooer" is any type that has the functions "foo, bar, and
-baz" available.
 
-Given how the interface was defined, those function could have
-any signature and do anything just as long as they exist then that's okay.
+This is saying that a "fooer" is any type that has "foo, bar, and baz"
+function available.
+
+So we could define a struct with those fields:
 
 ```
-// If we define some functions with the correct names
-foo -> 1
-bar -> 'hello'
-baz -> 3
+thing = {
+  foo: "foo",
+  bar: 1,
+  baz: false
+}
 
-// Now everything is a "fooer"
-x:fooer = 1
-x:fooer = 'blah'
-x:fooer = ()
+foo = a:thing -> a.foo
+bar = a:thing -> a.bar
+baz = a:thing -> a.baz
+
+fooer thing
+=> true
 ```
 
-This is because "fooer" didn't define function signatures and thus the function
-declared are available for any type.
-
-If we wanted to lock that down we would define add strictness to the function
+If we wanted to lock that down we would add strictness to the function
 signatures:
 
 ```
@@ -125,40 +136,19 @@ fooer = interface {
 }
 ```
 
-If the functions are ones with multiple parameters, you can do that as well:
-
+You can specify functions with multiple parameters as well:
 
 ```
 fooer = interface {
   foo: str -> str,
   bar: str -> str,
-  baz: a b:str -> int
+  baz: (str, str) -> int
 }
-```
-
-So if we take that last "fooer" definition then our example now breaks as
-expected:
-
-```
-foo -> 1
-bar -> 'hello'
-baz -> 3
-
-// Fail because no functions named "foo, bar, and baz" were found with the
-// required signatures
-x:fooer = 1
-x:fooer = ()
-
-// Even though a function "bar" was found with the correct signature, "bar and
-// baz" are still not satisfied and therefore the assignment fails
-x:fooer = 'blah'
-=> Error: "blah" does not implement "fooer"
 ```
 
 ## Composability
 
-Just as with `types`, you can compose interfaces to make other interfaces by
-"embedding" them in the declaration
+Just as with `types`, you can compose interfaces to make other interfaces
 
 ```
 printable = interface { print }
@@ -169,9 +159,9 @@ writable = interface {
   nameable
 }
 
-x = type {
-  print: x
-  name: "X is {{x.print}}"
+x = {
+  name: "equis",
+  print: (-> "X is {x.name}")
 }
 
 printable x
@@ -184,69 +174,68 @@ writable x
 => true
 ```
 
-You can also create interfaces on the fly using:
+You can also create interfaces on the fly:
 
 ```
 writable = printable + nameable
 
-typeof writable
+type_of writable
 => interface
 ```
 
-You can also derive interfaces by composing `types`:
+## Deriving
+
+### from types
+
+You can also _"derive"_ interfaces by composing `types`. When the `interface`
+function is called with types, it will look for all the functions associated
+with the types and define an interface specifying said types
 
 ```
-person = type { name: string }
-car = type { make: string, model: string, year_of_prod: 2019 }
+person = type { first:str, last:str }
+name = p:person -> "{p.first} {p.last}"
+
+
+car = type { make: str, model: str, year_of_prod: 2019 }
+pretty_name = c:car -> "{c.year_of_prod} {c.make} {c.model}"
+
 
 nameable = interface { person, car }
 
 dump nameable
-=> interface { name: string, make: string, model: string, year_of_prod: int }
+=> interface { name:str, pretty_name:str }
 ```
+
+However, if any of the types have a function associated to them that collide
+with any of the types, you'll get an Error; collision here means signature
+collision
+
+```
+person = type { first:str, last:str }
+name = p:person -> "{p.first} {p.last}"
+
+
+dog = type { nick:str }
+name -> "{d.nick}"
+
+nameable = interface { person, dog }
+
+=> Compile Error: `person.name` takes 1 parameter, `dog.name` takes no param...
+```
+
+### from mixed
 
 You can mix and match `types` and `interfaces` as well:
 
 ```
 i = interface { a }
+
 b = type { foo: "fubar" }
+sitrep = b:b -> b.foo
+
 
 mixed = interface { i , b }
 
 dump mixed
-=> interface { a: anything, foo: string }
+=> interface { a: anything, sitrep: str }
 ```
-
-This works because of how _lang_ treats fields in a type.
-
-When a `type` is defined, it will define a function that will return a
-structure of a certain shape meaning that it will have certain fields tied to
-it.
-
-```
-automobile = type {
-  make: string,
-  model: string,
-  name: (-> automobile.make + automobile.model)
-}
-```
-
-Here we're basically saying that the "automobile" type will have the fields
-"make", "model", and "name" where:
-
-- 'make' is of type string
-- 'model' is of type string
-- and 'name' is a function
-
-But... in _lang_ everything is a function... including fields
-
-**So what we're really saying is:**
-
-The "automobile" type will have the fields "make", "model", and "name" where:
-
-- 'make' is value function returing a string
-- 'model' is value function returing a string
-- and 'name' is a function that returns anything
-
-So in practice, the only difference between a `type` and an `interface` is that an
-interface cannot be instantiated...

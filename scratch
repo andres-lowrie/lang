@@ -1,0 +1,21 @@
+foo = -> a
+
+foo -> a
+
+foo = (-> x)
+
+
+boo -> "hello"
+
+hello
+
+foo = (a, b, c) -> + [a, b, c]
+
+foo = a b c -> + [a b c]
+
+[one, two, three]
+[one trow (three a)]
+
+
+
+new_thing = map (-> blah) [1 2 3]

@@ -152,6 +152,31 @@ if condition
   do nested_sad yet_another_condition
 ```
 
+## Matching
+
+Sometimes you want to run a different function given a bunch of different conditions, 
+cases where a `switch` statement could be used in other languages.
+
+For those cases you can use the `match` function
+
+```
+match = (a:any, b:stuct) -> any
+```
+
+The thing to note in this function is the `b` parameter which is a structure
+where each key is a ("predicate function", and an expression).
+
+The functions are actually partially applied functions such that, `match` will
+pass `a` to them, if they evaluate to `true`, then the expression for the
+corresponding predicate function is executed
+
+```
+match "match is just a function" {
+  (type_of int): stdout "its an integer",
+  (type_of str): stdout "its a str"
+}
+```
+
 ## Sugary goodness
 
 Given the "line of sight" initiative, _lang_ ships with a bunch of functions to
@@ -175,7 +200,24 @@ All of these mean the same thing, "both are equal"
 ```
 a == b  // both are equal
 a is b  // both are equal
-a eq b  // both are equal
 ```
 
-`is` is an alias for 
+### non-equality functions
+
+All of these mean the same thing, "both are not equal"
+
+```
+a != b    // both are not equal
+a isnt b  // both are not equal
+```
+
+### negation
+
+the function `not` is similar to `!` in other languages
+
+```
+a = true
+
+if not a
+  stdout "you should use `unless` instead"
+```
