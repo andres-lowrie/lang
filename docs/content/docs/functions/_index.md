@@ -15,6 +15,7 @@ the variable you assigned is of the function type.
 There are several ways to declare functions based on _arity_ and type specification
 
 tl;dr: syntaxes are
+
 ```
 function_name -> <body>
 function_name = <parameter> -> <body>
@@ -71,6 +72,7 @@ and_one = a:int -> a + 1
 and_one = a:int -> int
   a + 1
 ```
+
 pretty straight forward
 
 #### Variadic
@@ -87,7 +89,6 @@ add = (a:int, b:int) -> int
 
 The difference being the parenthesis; they're required when declaring a
 function that has more than 1 parameter
-
 
 ### Returning
 
@@ -114,7 +115,6 @@ useful when breaking out of a function early
 
 Technically, they can't return multple things return a _tuple_ of things;
 however the synax provides sugar to do so
-
 
 ```
 name -> 'John, 'Smith'
@@ -148,7 +148,7 @@ where
   <parameter> a binding with optional type ie: "a or a:<type>"
 ```
 
-For example, a lambda with no parameters 
+For example, a lambda with no parameters
 
 ```
 dump (-> "Hello World")
@@ -243,6 +243,10 @@ fav_food = do:str
   got = prompt "What's your favorite food? Use commas if needed"
   first (split ',' got)
 ```
+
+with `do` block, every newline denotes a new expression and so if you have
+nullary function or sequence of things to run, `do` gives a nice syntax to do
+so
 
 ### Variadic Parameters
 
@@ -351,13 +355,11 @@ log_a_thing -> ...
 Now _lang_ will let either 1 function, a list of functions, or anything be
 passed into it and run the function that matches the signature
 
-
 ## Functional
 
 At it's core, _lang_ is a functional language meaning that certain features
 are baked in, in general function are first class citizens; meaning they're
 basically any other value and you compose them, pass them around, etc etc.
-
 
 ### Auto curry / partial application
 
@@ -435,7 +437,7 @@ parenthesis
 => 5
 ```
 
-Examples of infix and auto\_curry working hand and hand
+Examples of infix and auto_curry working hand and hand
 
 ```
 x = 4 /

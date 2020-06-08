@@ -153,39 +153,92 @@ get_data -> (struct, error)
 data, err = (get_data)
 ```
 
-## Binding to on_* events
+## Handling error events
 
-as a fallback to the above, you can bind functions to failures events that work
-similar to "traditional" catch blocks
+The last way to handle errors is using the `on_*` events.
 
-Instead you can use the `on_*` functions referred to as
-"event hooks".
-
-In a nutshell, you handle errors by listening for events instead of a
-`try/catch` statement.
+In a nutshell _lang_ has a concept of events that every function can _emit_,
+one of these events is the `on_error` event which is called when any function
+`crashes` and the function (if any) bound to said function it is passed the
+`error`.
 
 ```
 fn ->
   do something_that_may_break
 
 
-fn.on_error -> {
+fn.on_error = err ->
   // handle errors
-}
 ```
 
-You can also wrap a block with an event handler using the `with` function
+Here we're binding a function directly to the `fn`, however we can also use any
+function that has the error handling signature:
 
 ```
-on_error -> {
-  // handle error
-}
-
-with { on_error } {
-  // handle error
-}
+binding_name = a:error -> <body>
 ```
 
-## hooks for `blocks`
+so this is also perfectly valid
 
-**on\_error :** When any error happens on when the body blocks runs
+```
+my_error_handler = e:error ->
+  json e | to_db
+  stderr e
+
+op1 ->
+  // do something that may break
+
+op2 ->
+  // do another something that may break
+
+op3 ->
+  // and another
+
+op4 ->
+  // and so on
+
+
+[op1, op2, op3, op4].every (f ->
+  f.on_error = my_error_handler
+)
+```
+
+### with
+
+Attaching functions to `events` is a very common thing in _lang_, the `with`
+function can be used to bind handlers to all functions in it's body
+
+It looks like this
+```
+with = (handlers:struct, branch:expression) -> <body>
+```
+
+The handlers struct takes _keys_ with matching events names and _values_ as the
+handlers
+
+```
+my_error_handler = e:error ->
+  json e | to_db
+  stderr e
+
+with { on_error:my_error_handler } do
+  op1
+  op2
+  op3
+  op4
+```
+
+Or if you give your function the same names as the event, you can use the
+shorthand
+
+```
+on_error = e:error ->
+  json e | to_db
+  stderr e
+
+with { on_error } do
+  op1
+  op2
+  op3
+  op4
+```
