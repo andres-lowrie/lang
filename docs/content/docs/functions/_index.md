@@ -45,6 +45,7 @@ These are functions that only take one parameter. They look like this
 ```
 and_one = a -> a + 1
 and_one = a:int -> a + 1
+and_one = a:int -> int; a + 1
 and_one = a:int -> int
   a + 1
 ```
@@ -59,6 +60,7 @@ look like this:
 ```
 add = (a, b) -> a + b
 add = (a:int, b:int) -> a + b
+add = (a:int, b:int) -> int; a + b
 add = (a:int, b:int) -> int
   a + b
 ```
@@ -89,17 +91,20 @@ useful when breaking out of a function early
 
 ### Multiple returns
 
-Technically, they can't return multple things return a _tuple_ of things;
-however the synax provides sugar to do so
+Technically, functions can't return multple things, they can return a _tuple_ of
+things; however the syntax provides sugar to assign multiple variables of a
+tuple that's returned
 
 ```
-name -> 'John, 'Smith'
+name -> 'John', 'Smith'
 
 first, last = name
 ```
 
-You can specify the types of those as well like any other function just need
-some commas in the right places
+The comma (`,`) makes the return a tuple; in the above case it sets the
+return type to a "pair tuple of any" (tuple:any). You can however specify the
+types of those as well like any other function, just need some commas in the
+right places
 
 ```
 name -> (str, str)
@@ -132,8 +137,7 @@ dump (-> "Hello World")
 => "Hello World"
 ```
 
-If your lambda needs parameters, then you can define them the same way you do
-in any other function
+One with parameters
 
 ```
 nums = [1, 2, 3]
@@ -158,14 +162,14 @@ add (f)
 => 6
 ```
 
-Sometimes you just need that need that little extra expression in a lambda and
+Sometimes you just need that little extra expression in a lambda and
 breaking it out into multiple lines is overkill, for those cases you can ues
-the semi-colon `;` to denotes expressions
+the semi-colon `;` to denote multiple expressions
 
 ```
 some_stuff = [{}, {}, {}]
 
-// A janky way through dump things out without stopping the program
+// A janky way to dump things out without stopping the program
 props = stuff.map (i -> dump i; i.prop)
 ```
 
@@ -212,7 +216,7 @@ fav_food = do
   first (split ',' got)
 ```
 
-You can define specify types return types as well
+You can specify return types as well
 
 ```
 fav_food = do:str
@@ -228,7 +232,7 @@ so
 
 #### Capture
 
-You can define function that takes `n` number of parameters, by using the
+You can define a function that takes `n` number of parameters, by using the
 ellipses
 
 ```
@@ -247,7 +251,17 @@ If you want to assign the parameters to a variable you can do that as well by
 adding the variable name to the end of the ellipses
 
 ```
-numbers -> ...nums
+numbers = ...nums ->
+  // do stuff with list of nums
+```
+
+this will capture all the arguments and create a `list:any` assigned to the
+`nums` variable in the body. If you want to specify the type you just have to
+remember that it's a list of stuff
+
+```
+numbers = ...nums:list:int ->
+  // do stuff with list of ints
 ```
 
 #### Spread
@@ -256,7 +270,7 @@ You can also "spread out" a list when calling a function by sending each item in
 a list to the function as a separate parameter
 
 ```
-add (a, b, c) -> a + b + c
+add = (a, b, c) -> a + b + c
 
 stuff = [1, 2, 3]
 
@@ -267,14 +281,14 @@ add ...stuff
 ## Overloading
 
 One of the core goals of _lang_ is to let you turn on the strictness as you
-need it to allow you to "code jazz" while your working out an idea but then
+need it to allow you to "code jazz" while you're working out an idea but then
 later turn up the "type-y-ness" when/if you want
 
 One of the ways to do this is by using the built in pattern matching
 functionality to define a function with different arities and return types
 (_lang_ calls this "signatures")
 
-For Example:
+For example
 
 ```
 log_a_thing = f ->
@@ -333,20 +347,16 @@ passed into it and run the function that matches the signature
 
 ## Functional
 
-At it's core, _lang_ is a functional language meaning that certain features
-are baked in, in general function are first class citizens; meaning they're
-basically any other value and you compose them, pass them around, etc etc.
-
 ### Auto curry / partial application
 
-_lang_ will auto curry functions if supplied less parameters then expected
+_lang_ will automatically curry functions if supplied less parameters then expected
 
 ```
 add = (a, b) -> a + b
 
 add2 = add 2
 
-// Since add expected 2 parameters but got 1, it will return a function instead
+// Since `add` expected 2 parameters but got 1, it will return a function instead
 // of the expression at the end of its body
 
 add2 2
@@ -377,8 +387,10 @@ For example the operator `+` is actually a function that has a definition like
 this
 
 ```
-add = (a:num, b:num) -> a + b
-+:infix = add
+add = (a:num, b:num) -> num; a + b
+
+// make the symbol "+" infixable and reference the add function
+:infix = ~>dd
 ```
 
 `infix` is a built-in type that tells _lang_ that a function can be called with
@@ -396,7 +408,7 @@ Meaning that the following two expressions are equivalent
 
 #### Order of operations / precedence
 
-_lang_ is left associative, in order to make not so, you have to use
+_lang_ is left associative, in order to make it not so, you have to use
 parenthesis
 
 ```
@@ -411,12 +423,4 @@ parenthesis
 // without infix
 + 4 (/ 4 4)
 => 5
-```
-
-Examples of infix and auto_curry working hand and hand
-
-```
-x = 4 /
-result = x 4
-=> 1
 ```

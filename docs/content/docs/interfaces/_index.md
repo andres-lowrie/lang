@@ -7,7 +7,7 @@ title: Interfaces
 In _lang_ an "interface" is a way to ensure that a certain set of functions are
 available for a given type
 
-For example, say you have some types defined like this:
+For example, say you have some types defined like this across a bunch of files:
 
 ```
 automobile = type {
@@ -19,26 +19,25 @@ name = a:automobile -> "{a.make}, {a.model}"
 person = type {
   first: str,
   last: str,
-  name: str,
 }
-name = a:person -> "{a.make}, {a.model}"
+name = a:person -> "{a.first}, {a.last}"
 
 animal = type {
   name: str
 }
 name = a:animal -> a.name
 
-alias = type {
+aliases = type {
   name: list:str
 }
-name = a:alias -> join a.name " "
+name = a:aliases -> join a.name " "
 ```
 
 And you want to make a function that prints out the name of each of these
 types, you could write
 
 ```
-print = a -> "a's name is: {name a}"
+print = a -> "a's name is: {a.name}"
 ```
 
 This is fine up until the you pass in something that doesn't have a "name"
@@ -51,13 +50,7 @@ print no_name
 => Runtime Error: `no_name` doesn't have a field or function `name`....
 ```
 
-In the case outlined above you could prevent this by changing your `print`
-function to use the dot `.` notation instead (ie: `{a.name}`) since that will
-look for both functions or field names, but... you're only half solving the
-problem since you could still pass in a struct that doesn't have a `name` field
-associated to it.
-
-To prevent this error from happening , you could define an `interface` instead:
+To prevent this error from happening, you could define an `interface` instead:
 
 ```
 nameable = interface { name }
@@ -65,9 +58,9 @@ nameable = interface { name }
 print = a:nameable -> "a's name is: {name a}"
 ```
 
-Now only types that have a function `"name"` associated to it will be allowed as
-arguments to the `print` function, if you try and run that program now, it will
-fail at compile time instead of runtime
+Now only types that have a function (or field) `"name"` associated to it will
+be allowed as arguments to the `print` function, if you try and run that
+program now, it will fail at compile time instead of runtime
 
 ```
 no_name = { foo: 'bar' }
@@ -78,7 +71,7 @@ print no_name
 
 ## The shape parameter
 
-The `interface` function take a structure as its only parameter that takes on
+The `interface` function takes a structure as its only parameter that takes on
 many shapes.
 
 The most lax version of it is one where only the names are defined:
@@ -93,7 +86,7 @@ fooer = interface {
 
 
 This is saying that a "fooer" is any type that has "foo, bar, and baz"
-function available.
+function/field available.
 
 So we could define a struct with those fields:
 
@@ -112,8 +105,8 @@ fooer thing
 => true
 ```
 
-If we wanted to lock that down we would add strictness to the function
-signatures:
+If we wanted to define a type for the function of field we would define a type
+as the value of the keys we want:
 
 ```
 fooer = interface {
@@ -124,9 +117,11 @@ fooer = interface {
 ```
 
 Now we're saying that the "foo, bar, and baz" functions must take 1 parameter
-of type string.
+of type string when they're functions or in the case that the implementation is
+a field; it must be of type string.
 
-We can also specify the return type as well:
+If we want to specifically say that we want functions and not fields, We can
+also specify the return type function as values:
 
 ```
 fooer = interface {

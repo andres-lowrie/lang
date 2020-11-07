@@ -51,12 +51,12 @@ set and the value will **always** be the string 'Doe'; in other words when
 assigning values to a `type`, those values are _immutable_.
 
 On the other hand if you just want a type to use a shape, ie: the
-actual _type_ of the fields doesn't matter, then you can use the `anything` type:
+actual _type_ of the fields don't matter, then you can use the `anything` type:
 
 ```
 person = type {
-  first:anything,
-  last:anything
+  first:any,
+  last:any
 }
 ```
 
@@ -107,7 +107,7 @@ parameter of type _"structure"_.
 The singature for the type function looks this:
 
 ```
-type -> a:struct -> b -> a
+type = a:struct -> f -> a -> b
 ```
 
 
@@ -119,20 +119,20 @@ person = type { first:str, last:str }
 
 developer = person { first: 'Jane', last: 'Doe' }
 
-dump type_of developer
+dump (type_of developer)
 => person
 ```
 
-The single parameter is always optional for a type so you could also do the
-following to achieve the same thing:
-
-```
-developer = call person
-developer.first = 'Jane'
-developer.last = 'Doe'
-```
-
 ## Dynamic Types
+
+_lang_ provides a way to create type restrictions during runtime using "Dynamic
+Types"
+
+These are being determined at runtime, so note that violations on these "types"
+will cause the program to throw an error unlike the other types described thus
+far which will cause compile time errors.
+
+### Overview
 
 Given that the `type` construct is just a function, you can actually leverage
 that to create types on the fly.
@@ -143,11 +143,11 @@ getData ->
   last = prompt "What's your last name?"
   {first, last}
 
-// Here we say that want to define the structure `getData` returns as a custom
-// type
-user = type getData
+// Here we say that we want to define the structure `getData` returns as a
+// custom type
+user = (type getData)
 
-// Then we can run out program
+// Then we can run our program
 call user
 dump user
 
@@ -160,11 +160,12 @@ dump user
 => user { first:'Bobby', last: 'Sue' }
 ```
 
-## Conditional Types
+### Conditional Types
 
 The type system in _lang_ is not only optional but it also strives to be
 conditional; the idea is to allow the user to be able to express a condition
-which must evaluate to true before a value can be bound to a variable.
+which must evaluate to true before a value can be bound to a variable and allow
+the program to continue
 
 The conditions are expressed via single parameter ("unary") boolean functions
 
@@ -185,9 +186,10 @@ x:yes = 'x'
 x:yes = []
 ```
 
-It doesn't matter what the function does _lang_ will run the function passing
-whatever is on the right hand side of the "=" and check the return value; if
-it's `true` lang will allow the assignment
+There aren't any restrictions to the function _lang_ will run the function
+passing whatever is on the right hand side of the "=" to it and check the
+return value; if it's `true` lang will allow the assignment otherwise it will
+return an error
 
 For example:
 
@@ -208,7 +210,7 @@ z:odd = 4 / 2
 ```
 
 A more pratical application of this would be to combine functions together to
-create a condition that can clearly express the intended value of variable:
+create a condition that can clearly express the intended value of a variable:
 
 ```
 profanity_en = ... // Function that gets a list of bad words in english
@@ -216,7 +218,8 @@ profanity_es = ... // Function that gets a list of bad words in spanish
 
 allowed_word = w -> not in profanity_en + profanity_es
 
-x:allowed_word = ...
+// Now we have a check that clearly shows what type of vlaues we want to allow
+user_name:allowed_word = ...
 ```
 
 In other words "conditional type" are like syntactic sugar that make it possible
@@ -231,7 +234,7 @@ cond_fn = a ->
 variable = cond_fn <potential value>
 ```
 
-Into one line that shows more clearly shows the intent
+Into one line that clearly shows the intent
 
 ```
 variable:condition = <potential value>

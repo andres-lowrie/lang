@@ -17,7 +17,7 @@ if = (true, branch:expression, _) -> branch
 if = (false, _, branch:exression) -> branch
 ```
 
-Basically it uses the pattern matching to call a different function (or
+Basically it uses pattern matching to call a different function (or
 "branch") depending on the value of some condition; this pattern matching
 approach allows _lang_ to use `if` like any other function which comes with
 some nice benefits.
@@ -95,8 +95,8 @@ the second when the first argument is false
 if false <expression1> <expression2>
 ```
 
-Given that there aren't any braces when calling functions, the 'out of the box'
-"if/else" requires the use of `do` block to denote expressions
+Given that there aren't any parenthesis when calling functions, the 'out of the
+box' "if/else" requires the use of a `do` block to denote expressions
 
 
 ```
@@ -111,23 +111,12 @@ This is by design, _lang_ doesn't ship with an `else` on purpose, it becomes
 too easy to create nested code that is really hard to read, instead it wants
 you to pass in an expression
 
-```
-a = rand bool
-
-do_it -> stdout "doing it"
-dont_do_it -> stdout "not doing it"
-
-if a
-  do do_it
-  do dont_do_it
-```
-
 Here's the type of thing this system tries to avoid
 
 ```
 if condition
   if another_condition
-    do_something
+    something
   else
     another_thing
 else
@@ -144,8 +133,8 @@ partial application are availalbe; it's pretty easy to take something that
 would look like the above code and make it something much easier to read
 
 ```
-nested_happy = if _ do_something another_thing
-nested_sad = if _ blah more_nonsense
+nested_happy = if another_condition something another_thing
+nested_sad = if yet_another_condition blah more_nonsense
 
 if condition
   do nested_happy another_thing
@@ -164,7 +153,7 @@ match = (a:any, b:stuct) -> any
 ```
 
 The thing to note in this function is the `b` parameter which is a structure
-where each key is a ("predicate function", and an expression).
+where each key is a "predicate function", and the each value an expression.
 
 The functions are actually partially applied functions such that, `match` will
 pass `a` to them, if they evaluate to `true`, then the expression for the
@@ -180,7 +169,7 @@ match "match is just a function" {
 ## Sugary goodness
 
 Given the "line of sight" initiative, _lang_ ships with a bunch of functions to
-make reading conditional easier
+make reading and expressing conditions easier
 
 ### unless
 
