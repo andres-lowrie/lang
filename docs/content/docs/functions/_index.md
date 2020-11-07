@@ -18,7 +18,7 @@ tl;dr: syntaxes are
 
 ```
 function_name -> <body>
-function_name = <parameter> -> <body>
+faunction_name = <parameter> -> <body>
 function_name = ([<parameter>, ...]) -> <body>
 
 where
@@ -37,30 +37,6 @@ parameters. These can be expressed like
 ```
 my_func -> 1 + 2
 ```
-
-Since this is basically a value assignment, the question that forms is "What's
-the difference between these?":
-
-```
-my_func -> 1 + 2
-my_func = 1 + 2
-```
-
-difference is that the first expression won't run and do the math operation
-until `my_func` is called, while the second expression will run as soon as it
-is parsed So, when you want a side-effect to occur (which you usually don't)
-you can use the first form.
-
-A more practical usage this form is to check the value of something at
-runtime, something that is not static or mutable for example
-
-```
-getStatus -> http get https://api.com/status
-```
-
-here `getStatus` will go and fetch that content when called and since the
-status of the api can change at Runtime, it makes sense to use a function
-instead of a value
 
 #### Unary
 

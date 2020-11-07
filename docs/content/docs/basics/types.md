@@ -35,7 +35,7 @@ just     => Just
 either   => Either
 ```
 
-The collection 
+The collection ones
 
 ```
 list   => List
@@ -102,8 +102,11 @@ collection[-2]
 _lang_ has some built in functions that make index access more sugary, specifically
 
 `head`  => returns first item in a list
+
 `tail`  => a list comprised of all the elements except the first
+
 `first` => an alias for `head`
+
 `last`  => returns last element
 
 ```
@@ -243,30 +246,35 @@ For example
 // In simple assignment
 foo:int = 0
 
-// When declaring function parameters but not the return type you can use the
-// single line form
+// In a one-line function where the parameters have types defined but not the
+// return type
 foo = (a:int, b:int) -> body here
 
-// When declaring the return type of a function, you have to use a new line
-// since that's how _lang_ determines the expression block...
-// also it's easier to read imho
+// and a one liner with a return type
+foo = (a:int, b:int) -> int; body here
+
+
+// If the function body is more complex than that then you have to use the new
+// line to separate the signature from the body
 foo = (a, b) -> int
   body here
 ```
+
+More info in [functions]()
 
 ### Type Chaining
 
 Some types are "Complex types" eg structures, lists, and potentially custom
 types in that they contain other data. For these types, you can specify
-containing type by simply adding more `:<type>`
+containing type by simply adding more "`:<type>`" as needed
 
-A way to think of it is that the colon `:` can be read as _"which is of type"_
+A way to think of it, is that the colon "`:`" can be read as _"of type"_
 
 
 ```
 // A list that holds strings
 //
-// foo "which is of type" list "which is of type" str
+// foo "of type" list which is "of type" str
 foo:list:str = [...]
 
 // foo is a list ... that holds lists.... that holds strings
@@ -302,7 +310,7 @@ Here's a contrived example where you're calling an unrealible service
 foo:list:list:maybe:structue = [[{},{},{}], [{},{},{}],...]
 ```
 
-the type definition is gnarly af, so we can make an alias instead to keep the
+the type definition is gnarly af, so we can make aliases instead to keep the
 line easy to read
 
 ```
