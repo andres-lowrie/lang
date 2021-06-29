@@ -59,7 +59,7 @@ You can have the same stuff
 collection = [1, 2, 3]
 ```
 
-You can have mixed stuff <sub>(technically, this becomes of `list:Anything`, but who cares about that)</sub>
+You can have mixed stuff <sub>(technically, this is interpreted to be `list:Anything`, but who cares about that)</sub>
 
 ```
 collection = [1, "foobar", 3, false]
@@ -178,10 +178,10 @@ data = {
 
 This should create a structure called `data` with fields `foo` and `bar`
 
-You can call a function when declaring a structure and use its value
+You can also point to variables as values:
 
 ```
-pi -> 3.14
+pi = 3.14
 
 data = {
   foo: 'bar',
@@ -192,7 +192,7 @@ data = {
 => data {num: 456, foo: 'bar', pi: 3.14 }
 ```
 
-This will add a key `pi` with the float value of `3.14` to `data` structure
+This will add a key `pi` with the value from the variable named "pi"
 
 
 #### Shorthand
@@ -202,7 +202,7 @@ using the variable name and value
 
 ```
 foo = 'bar'
-pi -> 3.14
+pi = 3.14
 
 // Declaring it like this
 data = {
@@ -214,23 +214,42 @@ data = {
 => data {num: 456, foo: 'bar', pi: 3.14}
 ```
 
+#### Dynamic keys
+
+You can also define a `key` name dynamically as well
+
+```
+foo = 'my_key'
+
+// Declaring it like this
+data = {
+  '{foo}': 123
+}
+
+=> data { my_key: 123 }
+```
+
+This leverages the fact that all strings can be _interpolated_ and uses the
+"_braces_" to do so at runtime
+
+
 ### Tuples
 
 Immutable collection of stuff
 
 ```
-my_tup = (1,2,3)
+my_stuff = (1,2,3)
 ```
 
 You can also define what kind of stuff it is
 
 ```
-my_tup:tup:int = (1, 2, 3)
+my_stuff:tup:int = (1, 2, 3)
 ```
 
 ## Defining types
 
-Declaring something of a type
+Declaring something of a type just requies usage of the colon (`:`)
 
 ```
 // For variables
@@ -255,7 +274,7 @@ foo = (a:int, b:int) -> int; body here
 
 
 // If the function body is more complex than that then you have to use the new
-// line to separate the signature from the body
+// line to separate the signature and align the body (with 1 <tab>)
 foo = (a, b) -> int
   body here
 ```
@@ -265,20 +284,35 @@ More info in [functions]()
 ### Type Chaining
 
 Some types are "Complex types" eg structures, lists, and potentially custom
-types in that they contain other data. For these types, you can specify
-containing type by simply adding more "`:<type>`" as needed
+types in that they contain other data.
 
-A way to think of it, is that the colon "`:`" can be read as _"of type"_
+For these types, you can specify the containing type by simply adding more
+"`:<type>`" as needed
+
+A way to think of it, is that the colon "`:`" can be read as _"of type"_ and when it
+appears after a type that can consist of other types it's read as "consisting
+of type"
 
 
 ```
 // A list that holds strings
 //
-// foo "of type" list which is "of type" str
+// foo "of type" list "consisting of" str
 foo:list:str = [...]
 
 // foo is a list ... that holds lists.... that holds strings
+// or
+// foo "of type" list "consisting of type" list "consisting of type" str
 foo:list:list:str = [[]...]
+```
+
+When the containing type has a specifc set of members (like for example an
+`enum` or a `tuple`) then you denote the members within brackets and separate
+them with commas:
+
+```
+// foo "of type" tuple "consisting of a str and a str"
+foo:tup[str,str] = (1, 2)
 ```
 
 In other languages the last one could look like this maybe

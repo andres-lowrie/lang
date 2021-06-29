@@ -40,8 +40,8 @@ escape_double_quote 'No "double quote please"'
 -> 'No \"double quote please\"
 
 // To ones that guess
-escape "Escape 'double quote'"
--> "Escape \'double quote\'"
+escape "Escape 'single quote'"
+-> "Escape \'single quote\'"
 
 escape `Some string that's a 'mix' of "strings"`
 -> `Some string that\'s a \'mix\' of \"strings\"`
