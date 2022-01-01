@@ -78,7 +78,7 @@ add = (a, b) ->
 You can break out early by calling the `return` function in the body of a function
 
 ```
-add_odds = a b ->
+add_odds = (a, b) ->
   if a % 2
     return a + b
   a + b
@@ -118,7 +118,6 @@ assigned to a variable)
 The syntax is
 
 ```
-(-> <body>)
 () -> <body>
 (<parameter>) -> <body>
 (<parameter>,...) -> <body>
@@ -133,9 +132,9 @@ where
 For example, a lambda with no parameters
 
 ```
-dump (-> "Hello World")
+typeof () -> "Hello World"
 
-=> "Hello World"
+=> fn:str
 ```
 
 
@@ -156,7 +155,7 @@ add = (a, b) -> a + b
 
 // both of these are the same
 get_nums = :tup -> 2, 4
-get_nums = (-> tup 2, 4)
+get_nums = () -> tup 2, 4
 
 
 add (get_nums)
@@ -169,7 +168,7 @@ Sometimes you just need that little extra expression in a lambda and breaking it
 stuff = [{}, {}, {}]
 
 // A janky way to dump things out without stopping the program
-props = stuff.map (i) -> dump i; i.prop
+props = map (i) -> dump i; i.prop, stuff
 ```
 
 ## Calling a function
@@ -209,31 +208,14 @@ value = add 2 sub 3 1
 Sometimes you want to do run a function as soon as you define it, for that you can surround the function in parenthesis
 
 ```
-password = get_password_for (get_user_name 'susan')
+password = (-> get_password_for 'susan')
+
+// or do a couple of things
+password = (-> log_access 'susan'; get_password_for 'susan')
 ```
 
-### Do blocks
-```
-fav_food = do
-  got = prompt "What's your favorite food? Use commas if needed"
-  first (split ',' got)
-```
 
-You can specify return types as well
-
-```
-fav_food = do:str
-  got = prompt "What's your favorite food? Use commas if needed"
-  first (split ',' got)
-```
-
-with `do` block, every newline denotes a new expression and so if you have
-nullary function or sequence of things to run, `do` gives a nice syntax to do
-so
-
-### Variadic Parameters
-
-#### Capture
+### Capturing Parameters
 
 You can define a function that takes `n` number of parameters, by using the
 ellipses
