@@ -4,7 +4,7 @@ title: Functions
 
 # Functions
 
-In _lang_ everything is a function and they're everywhere
+In _lang_ *everything is a function
 
 ## Declaring
 
@@ -12,19 +12,22 @@ There's no `keyword` for declaring functions; they're treated like any other
 variable. Instead the interpreter will look at the declaration and determine that
 the variable you assigned is of the function type.
 
-There are several ways to declare functions based on _arity_ and type specification
-
-tl;dr: syntaxes are
+Abstractly functions look like this
 
 ```
-function_name -> <body>
-faunction_name = <parameter> -> <body>
-function_name = ([<parameter>, ...]) -> <body>
+// Without types
+the_name_of_the_function = (parameters) -> body
 
-where
-  <body>      is an expression, or a <type> followed by a newline
-              (or semi-colon) and an expression
-  <parameter> a binding with optional type ie: "a or a:<type>"
+// With types
+the_name_of_the_function = (p1:t1, p2:t2, ...):rtype -> body
+
+// If signature gets too long for your taste
+// you can break up into multiple lines
+// where a <tab> delimits each level of the function
+the_name_of_the_function = (
+<tab>p1:t1,
+<tab>p2:t2):return_type ->
+<tab><tab>body
 ```
 
 ### Syntax forms
@@ -38,35 +41,29 @@ parameters. These can be expressed like
 my_func -> 1 + 2
 ```
 
-#### Unary
+the `=` can be omitted and the _thing arrow_ alone can be used.
 
-These are functions that only take one parameter. They look like this
-
+You can express the type on a nullary function but for that you have to include the `=` in the definition
 ```
-and_one = a -> a + 1
-and_one = a:int -> a + 1
-and_one = a:int -> int; a + 1
-and_one = a:int -> int
-  a + 1
+my_func = :num -> 1+2
+
+// parenthesis are optional
+my_func = ():num -> 1 + 2
 ```
 
-pretty straight forward
 
-#### Variadic
+#### 1 or more parameters
 
-Any function takes more than one parameter _lang_ calls _"variadic"_, and they
-look like this:
+_parenthesis_ are **required** if the function takes one or more parameters
 
 ```
 add = (a, b) -> a + b
 add = (a:int, b:int) -> a + b
-add = (a:int, b:int) -> int; a + b
-add = (a:int, b:int) -> int
+add = (a:int, b:int):int -> a + b
+add = (a:int, b:int):int ->
   a + b
 ```
 
-The difference being the parenthesis; they're required when declaring a
-function that has more than 1 parameter
 
 ### Returning
 
@@ -78,7 +75,7 @@ add = (a, b) ->
   a + b
 ```
 
-but you can also use the `return` keyword if you like
+You can break out early by calling the `return` function in the body of a function
 
 ```
 add_odds = a b ->
@@ -89,39 +86,43 @@ add_odds = a b ->
 
 useful when breaking out of a function early
 
+[read more about the return macro function]()
+
 ### Multiple returns
 
-Technically, functions can't return multple things, they can return a _tuple_ of
-things; however the syntax provides sugar to assign multiple variables of a
-tuple that's returned
+Technically, functions can't return multple things, they can return a _tuple_ of things; however the syntax provides sugar to assign multiple variables from the tuple that's returned
 
 ```
+// Sugar
 name -> 'John', 'Smith'
 
-first, last = name
+fname, lname = name
 ```
 
-The comma (`,`) makes the return a tuple; in the above case it sets the
-return type to a "pair tuple of any" (tuple:any). You can however specify the
-types of those as well like any other function, just need some commas in the
-right places
+When the value of the assignment can fit into 1 line, then the comma (`,`) can be used to express the tuple. If the tuple needs to span multiple lines however, then you need to call the `tup` function directly
 
 ```
-name -> (str, str)
-  'John', 'Smith'
+// All of these return the same tuple
+name -> 'John', 'Smith'
+name -> tup 'John', 'Smith'
+
+name = :tup:str,str -> 'John', 'Smith'
+name = ():tup:[str,str] -> 'John', 'Smith'
 ```
 
 ## Lambdas
 
 You can also create an anonymous function (as in a function that is not
-assigned to a variable), you just have to surround your function with parenthesis
+assigned to a variable)
 
-The syntax is:
+The syntax is
 
 ```
 (-> <body>)
-(<parameter> -> <body>)
-((<parameter>,...) -> <body>)
+() -> <body>
+(<parameter>) -> <body>
+(<parameter>,...) -> <body>
+(<parameter>,...):<type> -> <body>
 
 where
   <body>      is an expression, or a <type> followed by a newline or semi-colon
@@ -137,40 +138,38 @@ dump (-> "Hello World")
 => "Hello World"
 ```
 
+
 One with parameters
 
 ```
 nums = [1, 2, 3]
 
-odds = filter (a -> a % 2) nums
-
-// More than 1 parameter, requires parenthesis
-sum = fold ((acc, i) -> acc + i) nums
+odds = filter (a) -> a % 2, nums
+sum = fold (acc, i) -> acc + i, nums
 => 6
 ```
 
-You can also have lambdas with multiple retuns by specifying returns with
-commas
+When returning a tuple from a lambda, you need to either specify the return type or call the `tup` function
 
 ```
 add = (a, b) -> a + b
 
-f = (-> 2, 4)
+// both of these are the same
+get_nums = :tup -> 2, 4
+get_nums = (-> tup 2, 4)
 
-add (f)
 
+add (get_nums)
 => 6
 ```
 
-Sometimes you just need that little extra expression in a lambda and
-breaking it out into multiple lines is overkill, for those cases you can ues
-the semi-colon `;` to denote multiple expressions
+Sometimes you just need that little extra expression in a lambda and breaking it out into multiple lines is overkill, for those cases you can use the semi-colon `;` to denote multiple expressions
 
 ```
-some_stuff = [{}, {}, {}]
+stuff = [{}, {}, {}]
 
 // A janky way to dump things out without stopping the program
-props = stuff.map (i -> dump i; i.prop)
+props = stuff.map (i) -> dump i; i.prop
 ```
 
 ## Calling a function
@@ -200,16 +199,20 @@ sub = (a, b) -> a - b
 value = add 2 (sub 3 1)
 => 4
 
-// Implicit
+// Without the parenthesis _lang_ breaks
 value = add 2 sub 3 1
-=> Error: The function `sub` wants to 2 parameters, received....
+=> Compile error: The function `sub` wants to 2 parameters, received....
 ```
 
-### do blocks
+### Immediately Invoking Function Expression (IIFE)
 
-Sometimes you want to do run a function as soon as you define it, for that you
-can use the `do` syntax
+Sometimes you want to do run a function as soon as you define it, for that you can surround the function in parenthesis
 
+```
+password = get_password_for (get_user_name 'susan')
+```
+
+### Do blocks
 ```
 fav_food = do
   got = prompt "What's your favorite food? Use commas if needed"

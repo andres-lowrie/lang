@@ -16,3 +16,4 @@ headless: true
   - [Easy CLI](/docs/first-class-commands/easy_cli)
 - [Error Handling](/docs/error-handling/)
 - [Concurrency](/docs/concurrency/)
+- [thoughts](/docs/thoughts/)
