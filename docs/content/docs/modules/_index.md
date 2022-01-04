@@ -23,8 +23,7 @@ math.add 1 2
 
 ## Public and Private functions
 
-By default every function defined is "public" and will be exported. You can
-stop functions from being exported by using the `priv` function:
+By default every function defined is "public" and will be exported. You can stop functions from being exported by using the `priv` function and passing in the functions you want to hide:
 
 ```
 // A file named `math`
@@ -32,18 +31,40 @@ stop functions from being exported by using the `priv` function:
 add = (a, b) -> a + b
 sub = (a, b) -> a - b
 
-priv sub
+// You can inline it 
+div = priv (a, b) -> a / b
+mul = priv (a, b) -> a * b
+
+// Or you can declare them all at once
+priv div, mul
 
 
 
 // Another file
 import math
 
-math.sub 1 2
-=> Error: no function named `sub` in the `math` module ....
+math.mul 1 2
+=> Import error: no function named `mul` in the `math` module ....
 ```
 
-You can be excplicit by using the `export` function
+If you want to switch the default and say that all functions should be private unless defined otherwise, you can use the `pub` function explicitly:
+
+```
+// A file named `math`
+
+add = pub (a, b) -> a + b
+sub = pub (a, b) -> a - b
+div = (a, b) -> a / b
+mul = (a, b) -> a * b
+
+// or all at once
+pub
+  add
+  sub
+```
+
+
+You can either use the `pub` or `priv` functions but not both, doing so will cause an error
 
 ```
 // A file named `math`
@@ -51,26 +72,13 @@ You can be excplicit by using the `export` function
 add = (a, b) -> a + b
 sub = (a, b) -> a - b
 div = (a, b) -> a / b
+mul = (a, b) -> a * b
 
-export add sub
-```
+priv div, mul
 
-You can either use the implicit syntax or the explicit one but not both:
+pub add, sub
 
-If you use the `export` and `priv` function in your module, you'll get an error
-
-```
-// A file named `math`
-
-add = (a, b) -> a + b
-sub = (a, b) -> a - b
-div = (a, b) -> a / b
-
-priv div
-
-export add sub
-
-=> Compile Error: module at `math` uses both `export` and `priv` this is...
+=> Import error: module at `math` uses both `pub` and `priv` this is...
 ```
 
 ## The `import` function
@@ -91,14 +99,16 @@ import mod2
 import mod3
 ```
 
-or you can pass a _tuple_ to it:
+`import` is a _variadic_ function so you can also do:
 
 ```
-import (
- mod1,
- mod2,
- mod3,
-)
+import (mod1, mod2, mod3)
+
+// or using multiline application
+import
+  mod1
+  mod2
+  mod3
 ```
 
 You can also mix and match:
@@ -108,18 +118,17 @@ import mod1
 import mod2
 import mod3
 
-import (
- mod4,
- mod5,
- mod6,
-)
+import
+ mod4
+ mod5
+ mod6
 ```
 
-### local modules
+## local modules
 
 There are 3 types of "local" modules in _lang_.
 
-#### project modules
+### project modules
 
 The first and most common are those that are local to your project. To import
 those modules you point to the name of a file.
@@ -149,7 +158,7 @@ to import `stuff` I would do:
 import component/stuff
 ```
 
-To import from the local library I would do
+To import from the local libraries I would do
 
 ```
 import math
@@ -160,9 +169,9 @@ The folders `src/` and `lib/` are implied by _lang_ so you don't need to
 specify them. The differene between those 2 locations comes down to which
 directory _lang_ will check in first (spoiler it's `lib`)
 
-#### system modules
+### system modules
 
-The second type of local modules are those that come from _lang_.
+The second type of local modules are those that come from _lang_ itself
 
 When you do
 
@@ -177,12 +186,12 @@ _lang_ will look for a file named _"math"_ in this order:
 - then in the directory `lib/third-party/`
 - then in the directory `src/`
 
-if it doesn't find it in any of these locations you'll get an compile time
+if it doesn't find it in any of these locations you'll get an import time
 error.
 
-#### absolute path
+### absolute path
 
-The other type of local module are those you point to specifically using a path
+The other type of local modules are those you point to specifically using a path
 
 ```
 import /home/user/mystuff/math
@@ -190,12 +199,18 @@ import /home/user/mystuff/math
 
 This will bypass the default behavior and look for this file directly
 
-### external modules
+## external modules
 
 You can also import modules from the web:
 
 ```
 import github.com/user/repo/lib/math
+
+// or
+import ssh://git@github.com:user/repo/lib/math
+
+// or
+import github.com/user/repo/lib/math#commit-ish
 
 // or
 import domain.com/langstuff/math?k=v
@@ -206,7 +221,10 @@ import ssh://user@host:/home/user/stuff/math
 // or
 import s3://bucket/filepath/math
 
-// and a bunch other protocols too, just as long as the content is valid a lang
+// or
+import nfs://server/filepath/math
+
+// and a bunch other protocols too, just as long as the content is a valid lang
 // module
 ```
 
@@ -217,7 +235,7 @@ import s3://bucket/filepath/math
 The function definition for `import` looks like this:
 
 ```
-import = ...path:tup:str -> <body>
+import = ...path:str -> // implementation
 ```
 
 Meaning that anything that resolves to a string can be used as an import site.
@@ -228,28 +246,45 @@ operating system the user is currently on:
 import (funcs_ + os.name)
 ```
 
-If you want to import a module that's outside of the module path, you can do that as well:
+Or if you only want to import things under certain conditions:
+```
+if feature_flag_set
+  import some/mod; mod.do_something
+```
 
-### namespacing
-
-You can control the namespace of the functions you explicitly import pass the string `as` to import
+Or if you want to let the user decide, you can do that as well:
 
 ```
-import math as m
+user_path = prompt "Where are your modules at?"
+import user_path
+```
 
+> Using import at run time like this does come with some gotchas [read more about them here]()
+
+## Namespacing
+
+You can control the namespace of the functions imported by assigning them to variable:
+
+```
+m = import math
 ...
 ```
 
-You can also combine modules into a "namespace" if you like:
+You can also combine different modules into a "namespace" if you like:
 
 ```
-import math, geometry, trigonometry as m
+m = import
+  math
+  geometry
+  trigonometry
+  github.com/cool-lib/mod
 
 
 // Public functions from those modules are now available on the `m` structure
 m.add
 m.area
 m.cos
+m.cool_lib_fn
 ```
 
 When combining functions via import, _lang_ will resolve conflicts by embedding
@@ -265,7 +300,7 @@ pi = 3.1415926535897932384626433
 
 
 // Some other file
-import math, geometry, trigonometry as m
+m = import math, geometry, trigonometry
 
 m.math.pi
 => 3.14
@@ -274,13 +309,15 @@ m.geometry.pi
 => 3.1415926535897932384626433
 
 m.pi
-=> Runtime Error: Could not find function 'pi' in 'm'....
+=> Runtime error: Could not find function 'pi' in any of the modules in `m`....
 ```
 
-### destructuring
+## Destructuring
 
 You can also pull out functions from a module using the destructuring syntax:
 
 ```
 pi, add = import math
 ```
+
+> Note this follows the rules for [unpacking a structure]()
