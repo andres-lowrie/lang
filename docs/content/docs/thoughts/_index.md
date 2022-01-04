@@ -24,72 +24,37 @@ _complex_ types can then span multiple things like _structures_ , _lists_, _tupl
 ----
 
 
-## Type Defining  / Casting
+## Type Casting
 
-The `:` in _lang_ can be read as `"of"` or `"to"`
+The "magical dot" allows for _lang_ to shift around functions and parameters to make code easier to read in particular when applying functions to iterables
 
-When used on the left hand side of an `=` is should be read as `of` and be thought of as type declaration
-
+The canonical example is filtering a list
 ```
-my_foo:int = 1
-```
+my_list = [1, 2, 3, 4]
 
-is read as
+// assuming `filter` has signature like:
+//
+// filter:iter = (a:any, i:iter) ->
+// 
+// Then this is correct
+filter (n) -> n % 2, my_list
 
-> my_foo _of_ type int
-
-When used on the right hand side of an `=`, is should be read as `to` and be thought of as type casting
-
-```
-my_foo = 1:float
-```
-
-is read as
-
-> my\_foo cast _to_ float
-
-### The function exception
-
-Not everything falls into the simple statement outlined above. _functions_ violate _"the left hand and right hand side rule_"
-
-Since a function is assigned to a variable, it's natrually on the right hand side of the `=`
-
-```
-func = ():foo -> ...
+// but this is easier on the eyeballs
+my_list.filter (n) -> n % 2
 ```
 
-is read as
+However we can leverage this same concept to do casting without having to call a function at run time
 
-> func is a function that returns a foo
-
-
-That being said, you can move the type declaration to the left hand side by being more explicit with the variable:
+In order to do type casting, we need to call some `*TypeConstructor` function and pass it the value we want to convert; the dot syntax however allows us to do that in a way that is more convenient:
 
 ```
-func:foo = () -> ...
+n:int = 1
+
+// These 2 are equivalent
+x = float n
+x = n.float
 ```
 
-This also reads as
-
-> func is a function that returns a foo
-
-and even more explicit
-
-```
-func:fn:foo = () -> ...
-```
-
-All of these mean the same thing
-```
-func = :foo -> ...
-func = ():foo -> ...
-
-func:foo = -> ...
-func:foo = () -> ...
-
-func:fn:foo = -> ...
-func:fn:foo = () -> ...
-```
 
 ## Immutable by default
 
@@ -237,3 +202,35 @@ typeof x
 ```
 
 `imut` and `mut` are symmetrical from a user perspective, so all the same rules outlined for `mut` apply
+
+
+## Omitting commas
+
+_lang_ is whitespace sensitive since it does some clever parsing to make many parametered function easier to call
+
+Here's how to applies to functions
+
+```
+call_func p1, p2, p3, p4, p5, p6
+
+// or
+call_func
+  p1
+  p2
+  p3
+  p4
+  p5
+  p6
+```
+
+This comes in handy when dealing with function that take other functions as control strucutres, for example the `if`
+
+```
+// This is correct
+if bool_fn, cond, alternate
+
+// but this makes it easier to read
+if bool_fn
+  cond
+  alternate
+```

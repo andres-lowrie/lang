@@ -30,7 +30,7 @@ name = a:animal -> a.name
 aliases = type {
   name: list:str
 }
-name = a:aliases -> join a.name " "
+name = a:aliases -> join a.name
 ```
 
 And you want to make a function that prints out the name of each of these
@@ -47,7 +47,7 @@ function available; if that happens then you get a runtime error:
 no_name = { foo: 'bar' }
 
 print no_name
-=> Runtime Error: `no_name` doesn't have a field or function `name`....
+=> Runtime error: `no_name` doesn't have a field or function `name`....
 ```
 
 To prevent this error from happening, you could define an `interface` instead:
@@ -66,13 +66,13 @@ program now, it will fail at compile time instead of runtime
 no_name = { foo: 'bar' }
 
 print no_name
-=> Compile Error: `no_name` doesn't have a function `name`....
+=> Compile error: `no_name` doesn't have a field or function `name`....
 ```
+
 
 ## The shape parameter
 
-The `interface` function takes a structure as its only parameter that takes on
-many shapes.
+The `interface` function accepts a structure that takes on many shapes.
 
 The most lax version of it is one where only the names are defined:
 
@@ -86,9 +86,9 @@ fooer = interface {
 
 
 This is saying that a "fooer" is any type that has "foo, bar, and baz"
-function/field available.
+function or field available.
 
-So we could define a struct with those fields:
+So we could define a struct with those fields and the that _thing_ would implement the interface
 
 ```
 thing = {
@@ -97,16 +97,11 @@ thing = {
   baz: false
 }
 
-foo = a:thing -> a.foo
-bar = a:thing -> a.bar
-baz = a:thing -> a.baz
-
 fooer thing
 => true
 ```
 
-If we wanted to define a type for the function of field we would define a type
-as the value of the keys we want:
+If we wanted to be more strict about types we can do so
 
 ```
 fooer = interface {
@@ -116,27 +111,44 @@ fooer = interface {
 }
 ```
 
-Now we're saying that the "foo, bar, and baz" functions must take 1 parameter
-of type string when they're functions or in the case that the implementation is
-a field; it must be of type string.
+Now we're saying that the "foo, bar, and baz" must be fields of a certain type and we're saying that those fields must be of type string.
 
-If we want to specifically say that we want functions and not fields, We can
-also specify the return type function as values:
+If wanted to instead say that they should be functions, we would declare them as such:
 
 ```
 fooer = interface {
-  foo: str -> str,
-  bar: str -> str,
-  baz: str -> str
+  foo: fn,
+  bar: fn,
+  baz: fn
 }
 ```
 
-You can specify functions with multiple parameters as well:
+and we could add types to those as well:
+```
+fooer = interface {
+  foo: fn:str,
+  bar: fn:str,
+  baz: fn:str
+}
+```
+
+We can also specify what _signatures_ the function should have:
 
 ```
 fooer = interface {
-  foo: str -> str,
-  bar: str -> str,
+  foo: -> any,
+  bar: (:int) -> int,
+  // can also use the `tio` function
+  baz: :str:,
+}
+```
+
+You can specify functions with multiple parameters as well. You would just omit the parameter name:
+
+```
+fooer = interface {
+  foo: str -> int,
+  bar: int -> str,
   baz: (str, str) -> int
 }
 ```
@@ -156,7 +168,7 @@ writable = interface {
 
 x = {
   name: "equis",
-  print: (-> "X is {x.name}")
+  print: () -> "X is {x.name}"
 }
 
 printable x
@@ -174,17 +186,17 @@ You can also create interfaces on the fly:
 ```
 writable = printable + nameable
 
-type_of writable
+typeof writable
 => interface
 ```
 
 ## Deriving
 
-### from types
+### fields from types
 
-You can also _"derive"_ interfaces by composing `types`. When the `interface`
-function is called with types, it will look for all the functions associated
-with the types and define an interface specifying said types
+You can also _"derive"_ interfaces by composing `types`.
+
+When the `interface` function is called with types, it will look for all the fields associated of the passed in types and define an interface with all those types
 
 ```
 person = type { first:str, last:str }
@@ -198,39 +210,80 @@ pretty_name = c:car -> "{c.year_of_prod} {c.make} {c.model}"
 nameable = interface { person, car }
 
 dump nameable
-=> interface { name:str, pretty_name:str }
+=> interface { fist:str, last:str, make:str, mode:str, year_of_prod: int...
 ```
 
-However, if any of the types have a function associated to them that collide
-with any of the types, you'll get an Error; collision here means signature
-collision
+However, if any of the types share a field name with conflicting signatures then you'll get an error
 
+```
+person = type { first:str, last:str }
+
+birthdays = type { first:date, last:maybe:date }
+
+grim = interface { person, birthdays }
+
+=> Compile error: `person` and `birthdays` have different signatures for...
+```
+
+### pruning fields
+
+`interface` accepts a predicate function as a parameter that allows you to limit which fields are derived:
 ```
 person = type { first:str, last:str }
 name = p:person -> "{p.first} {p.last}"
 
+car = type { make: str, model: str, year_of_prod: 2019 }
+pretty_name = c:car -> "{c.year_of_prod} {c.make} {c.model}"
 
-dog = type { nick:str }
-name -> "{d.nick}"
+// Here we can say we only want the functions that are available
+nameable = interface { person, car }, (typeof fn)
 
-nameable = interface { person, dog }
+dump nameable
+=> interface { name: person -> str, pretty_name:car -> str }
 
-=> Compile Error: `person.name` takes 1 parameter, `dog.name` takes no param...
 ```
+
 
 ### from mixed
 
-You can mix and match `types` and `interfaces` as well:
+You can also mix and match `types` and `interfaces` as well, with all same rules as outlined above:
 
 ```
 i = interface { a }
 
-b = type { foo: "fubar" }
-sitrep = b:b -> b.foo
+report = type {
+  foo: "fubar"
+}
+sitrep = (report) -> report.foo
 
 
-mixed = interface { i , b }
+mixed = interface { i , report }
 
 dump mixed
-=> interface { a: anything, sitrep: str }
+=> interface { a: anything, sitrep:report -> str }
 ```
+
+## Immutable
+
+Interfaces are immutable by default and are only open to changes during parse time, meaning that you **can't** change the types an interface points to after you've declared an interface, regardless if those structures are mutable or not; doing so causes an error
+
+For example the following code will break
+```
+animal = mut { breed: str }
+
+i = interface { animal }
+
+animal.size = 'small'
+=> Compile error: `animal` was referenced by `my_interface` by on ...
+```
+
+If you want the interface to be "updated" whenever it's underlyin structures change, then you need to make explicitly define:
+```
+animal = mut { breed: str }
+
+i = mut interface, { animal }
+
+animal.size = 'small'
+```
+
+They're caveats, compile time, and run time quirks to how strict the interface can be if declared to be `mutable`, [go down the rabbit hole]()

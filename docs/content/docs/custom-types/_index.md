@@ -4,17 +4,37 @@ title: "Custom Types"
 
 # Custom Types
 
+Types are a core component to _lang_ and the language tries to add a lot of sugar and quality of life features to let users build off of the type system.
+
+## Aliases
+
+The first thing you might want to try and do is "aliasing" a type to some other name, and just like with everything else it's just a matter of "assigning" a type to a variable, a trvial example might be:
+
+```
+yes_or_no = bool
+```
+
+So now our program has a new type called `yes_or_no` which is equivalent to `bool`.
+
+Another perhaps more useful alias could be used to write your code in another language
+
+```
+entero = int
+flotante = float
+
+// etc. etc.
+```
+
 ## Declaring
 
-Sometimes you want to define the type of things that are in a structure, for
-that you can use the `type constructor` syntax is:
+_lang_ has a function named `type` that is used to define a type. You use it like any other function:
+```
+my_type = type <some structure>
+```
 
-```
-binding_name = type {
-  field_name:[<type>]
-  ...
-}
-```
+### Structures / Shapes
+
+It's common to use types in terms of structures; in _lang_ the term _"shape"_ is also used to describe these structures
 
 For example 
 ```
@@ -50,23 +70,41 @@ Now whenever a `person` is passed around, it will always have the field `last`
 set and the value will **always** be the string 'Doe'; in other words when
 assigning values to a `type`, those values are _immutable_.
 
-On the other hand if you just want a type to use a shape, ie: the
-actual _type_ of the fields don't matter, then you can use the `anything` type:
+### Enforcing only keys / Outlines
 
+When roughing out some code to just get the idea on paper, it can be helpful to have a shape that only enforces the keys or _fields_ of a structure but not the values.
+
+_lang_ calls these shapes _"outlines"_
+
+Verbosely the way to define them is like this:
 ```
 person = type {
   first:any,
-  last:any
+  last:any,
+  middle:any,
+  address: any,
 }
 ```
 
-The type constructor will default to the anything type if none is specified, so
-if you just wanna make shapes you can use the shorthand
-
+but you can omit the values if they're all going to be un-enforced
 ```
-person = type { first, last }
+person = type { first, last, middle, address }
 ```
 
+Note that if you're going to nest shapes, but still want to treat them as outlines, _lang_ can infer that too:
+
+```
+person = type {
+  first,
+  last,
+  middle,
+  address: [{
+    number, street, city, state, zip
+  }]
+}
+```
+
+When types like these are declared _lang_ will ensure that the keys are met whenever it encounters this type; either at compile time (when possible) or run time when dealing with dynamic data [read more about validtion types]()
 
 ## Composing
 
@@ -88,7 +126,7 @@ cat = type { say: 'meow' }
 dog = type { say: 'bark' }
 catdog = type { cat, dog }
 
-=> Compile Error: Ambiguous "say" field....
+=> Compile error: Ambiguous "say" field....
 ```
 
 ## Instantiation
@@ -104,12 +142,11 @@ person = type { first:str, last:str }
 You're declaring a function named `person` that takes an optional single
 parameter of type _"structure"_.
 
-The singature for the type function looks this:
+Abstractly the singature for the type function looks something like this:
 
 ```
-type = a:struct -> f -> a -> b
+type = a -> f -> s:optional -> t
 ```
-
 
 Meaning that to "instantiate" a person, you call the function just like any
 other function and pass in a structure:
@@ -119,9 +156,11 @@ person = type { first:str, last:str }
 
 developer = person { first: 'Jane', last: 'Doe' }
 
-dump (type_of developer)
+typeof developer
 => person
 ```
+
+[go down the rabbit hole of TypeFunction macros]()
 
 ## Dynamic Types
 
@@ -138,44 +177,54 @@ Given that the `type` construct is just a function, you can actually leverage
 that to create types on the fly.
 
 ```
-getData ->
-  first = prompt "What's your name?"
-  last = prompt "What's your last name?"
-  {first, last}
+// Some function that returns a structure
+login ->
+  username = prompt "What's your username?"
+  password = prompt_secret "What's your password?"
 
-// Here we say that we want to define the structure `getData` returns as a
-// custom type
-user = (type getData)
+  // Assume this returns some structure
+  do_actual_login username, password
+  
+  
+local_user -> (type getData)
 
-// Then we can run our program
-call user
-dump user
+=> "What's your username?"
+> "the dude"
 
-=> "What's your name?"
-> Bobby
+=> "What's your password?"
+> *******
 
-=> "What's your last name?"
-> Sue
+// The real power can come from the fact that the has
+// a type defined for _this_ user specifically so
+// we could define functions that only work with
+// this literal user
 
-=> user { first:'Bobby', last: 'Sue' }
+// perhaps things like 
+write_a_blog_post:local_user -> noop
+
+// or
+logout_other_sessions => (u:local_user) -> noop
+
+// or if you suppose this is running on some shared server
+// you could imagine a function somewhere that
+// listens for connections, perhaps it could do
+// something like
+is_that_user_this_user = (a:that_user, b:local_user) -> noop
+
+// etc. etc.
 ```
 
-### Conditional Types
+### Conditional Types / Guards
 
-The type system in _lang_ is not only optional but it also strives to be
-conditional; the idea is to allow the user to be able to express a condition
-which must evaluate to true before a value can be bound to a variable and allow
-the program to continue
+The _type_ function can also be used to express a condition which must evaluate to true before a value can be bound to a variable and allow the program to continue; _lang_ calls these guards
 
-The conditions are expressed via single parameter ("unary") boolean functions
+ Conditional Types are expressed via single parameter boolean functions (aka "unary" functions)
 
 For example:
 
 ```
-// We declare a unary function
-//
 // In this case it is a function that always returns true
-yes = a -> true
+yes = (a) -> true
 
 // This means that when "yes" is used as a type, _lang_ will let anything be
 // assigned to the variable on the left hand side... because the `yes` function
@@ -186,7 +235,7 @@ x:yes = 'x'
 x:yes = []
 ```
 
-There aren't any restrictions to the function _lang_ will run the function
+There aren't any restrictions to the function: _lang_ will run the function
 passing whatever is on the right hand side of the "=" to it and check the
 return value; if it's `true` lang will allow the assignment otherwise it will
 return an error
@@ -194,19 +243,19 @@ return an error
 For example:
 
 ```
-even = a -> a % 2 == 0
-odd = a -> not even
+even = (a) -> a % 2 == 0
+odd = (a) -> not even
 
 // Now we can say that "x" should only ever be a value that's even
 // and "y" should only ever be a value that is odd
 
 x:even = 3
-=> Runtime Error: `x` can only be assigned values that `even` returns `true` ...
+=> Runtime error: `x` can only be assigned values that `even` returns `true` ...
 
 y:odd = 1
 
 z:odd = 4 / 2
-=> Runtime Error: `z` can only be assigned values that `odd` returns `true` ...
+=> Runtime error: `z` can only be assigned values that `odd` returns `true` ...
 ```
 
 A more pratical application of this would be to combine functions together to
@@ -216,7 +265,7 @@ create a condition that can clearly express the intended value of a variable:
 profanity_en = ... // Function that gets a list of bad words in english
 profanity_es = ... // Function that gets a list of bad words in spanish
 
-allowed_word = w -> not in profanity_en + profanity_es
+allowed_word = (w) -> not_in profanity_en + profanity_es
 
 // Now we have a check that clearly shows what type of vlaues we want to allow
 user_name:allowed_word = ...

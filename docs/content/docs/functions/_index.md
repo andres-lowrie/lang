@@ -65,7 +65,7 @@ add = (a:int, b:int) -> a + b
 add:int = (a:int, b:int) -> a + b
 ```
 
-#### Multiple Lines
+#### Multiple Line Declaration
 
 A function can span multiple lines but the body of the function must be intended, ie: _lang_ is whitespace sensitive for multiple lined functions:
 
@@ -176,6 +176,36 @@ value = add 2 (sub 3, 1)
 value = add 2, sub 3, 1
 => Compile error: The function `add` wants to 2 parameters, received....
 ```
+
+### Multiple line application
+
+_lang_ is whitespace sensitive since it does some clever parsing to favor expressiveness. One of these parsing considerations is to allow for applying a function over parameters that are spread out over multiple lines.
+
+Say for example you have a function that takes a whole bunch of parameters
+
+```
+my_func = (p1, p2, p3, p4, p5, p6) -> // implementation
+```
+
+We _could_ call it like this:
+```
+my_func 1, 2, 3, 4, 5, 6
+```
+
+but if those values were longer or had complex variable names then that would become very hard to read. 
+
+The other way to call the function would be to place each parameter in its own line and omit the comma; not omit persay instead we swap out the comma for a `<newline>`
+```
+my_func
+  1
+  2
+  3
+  4
+  5
+  6
+```
+
+> This comes in handy when dealing with function that take other functions as control strucutres, for example the `if`. [Read more about the `if` function]()
 
 
 ## Multiple returns

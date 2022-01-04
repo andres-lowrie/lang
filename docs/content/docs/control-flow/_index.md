@@ -41,11 +41,10 @@ if something == 1
   stdout "something is 1"
 ```
 
-### Do something if multiple things are true
+### Multiple Conditions
 
-You can compare multiple things ...
-[if]("https://img.memecdn.com/when-im-waiting-for-someone-to-react-to-my-joke_gp_1906935.webp")
-... you like using the the `and` funciton as well as the `or` function
+You can use the `and` operator or the `or` operator
+
 
 ```
 yes = true
@@ -60,7 +59,7 @@ if yes or no
   stdout "Will see these"
 ```
 
-You can add as many "conditions" as you like
+You can add as many "conditions" as you like and group them using parenthesis
 
 ```
 a = 1
@@ -68,6 +67,12 @@ b = 2
 c = 3
 
 if a and b and c
+  stdout 'all 3 are truthy'
+
+if (a and b) or c
+  stdout 'all 3 are truthy'
+
+if a or (b or c)
   stdout 'all 3 are truthy'
 ```
 
@@ -79,7 +84,7 @@ a = 1
 b = 2
 c = 3
 
-cond1 = a == 1 and b != 4
+cond1 = a == 1 and b /= 4
 cond2 = cond1 and c == 3
 
 if cond1 and cond2
@@ -88,88 +93,110 @@ if cond1 and cond2
 
 ## What about else
 
-`if` has a signature that will ignore the first expression passed to it and run
-the second when the first argument is false
+`if` is a function that has a signature that will ignore the first expression passed to it and run the second when the first argument is false
 
 ```
-if false <expression1> <expression2>
+if false <ignored> <called_instead>
 ```
 
-Given that there aren't any parenthesis when calling functions, the 'out of the
-box' "if/else" requires the use of a `do` block to denote expressions
+Which means that there is no `else` and the out of the box "if/else" looks like this:
 
 
 ```
 a = rand bool
 
 if a
-  do stdout 'a is true'
-  do stdout 'a is false'
+  stdout 'a is true'
+  stdout 'a is false'
 ```
 
 This is by design, _lang_ doesn't ship with an `else` on purpose, it becomes
 too easy to create nested code that is really hard to read, instead it wants
-you to pass in an expression
+you to pass in a function
 
 Here's the type of thing this system tries to avoid
 
 ```
 if condition
   if another_condition
-    something
+    run_when_true
   else
-    another_thing
+    run_when_false
 else
   if yet_another_condition
-    blah
+    something_else
   else
-    more_nonsense
+    run_this_thing
 ```
 
 Reading code that looks like this sucks, _lang_ wants you to keep a left
-aligned clean "line of sight". Given that conditions can be stored into
-variables, `if` is just any other function, and functional constructs like
-partial application are availalbe; it's pretty easy to take something that
-would look like the above code and make it something much easier to read
+aligned clean "line of sight".
+
+Given that:
+- conditions are just functions
+- functions can be stored into variables
+- `if` is just any other function
+- and functional constructs like partial application come for free
+
+it's pretty easy to take something that would've looked like the above code and make it something much easier to read
 
 ```
-nested_happy = if another_condition something another_thing
-nested_sad = if yet_another_condition blah more_nonsense
+// Move the nested stuff up and out
+nested_happy = if another_condition, run_when_true, run_when_false
+nested_sad = if yet_another_condition, something_else, run_this_thing
 
 if condition
-  do nested_happy another_thing
-  do nested_sad yet_another_condition
+  nested_happy
+  nested_sad
+  
+  
+// Partial application can also be used to create much more complex
+// flows that are easily readable
+nested_happy = if _, run_when_true, run_when_false
+nested_sad = if _, something_else, run_this_thing
+
+run =
+  if _
+    nested_happy another_condition
+    nested_sad yet_another_condition
+
+// and now we can pass the logic to run something given some condition
+// or use it to build even more complex, deeply nested code.
+//
+// The idea with _lang_ is to push that complexity to the parser and
+// run time instead of our code
+run condition
 ```
+
 
 ## Matching
 
 Sometimes you want to run a different function given a bunch of different conditions, 
 cases where a `switch` statement could be used in other languages.
 
-For those cases you can use the `match` function
+For those cases you can use the `match` function. In very simple terms it has a function that looks like something like this
 
 ```
-match = (a:any, b:stuct) -> any
+match = (a:any, b:struct) -> // implementation
 ```
 
-The thing to note in this function is the `b` parameter which is a structure
-where each key is a "predicate function", and the each value an expression.
+The thing to note in this function is the `b` parameter is not a simple structure, it's actually a different type that expects the keys of the structure to be `unary` predicate functions. The implementation of `match` will then pass `a` to each of those functions and will run the corresponding function in the pair for the first predicate that returns true.
 
-The functions are actually partially applied functions such that, `match` will
-pass `a` to them, if they evaluate to `true`, then the expression for the
-corresponding predicate function is executed
+Sounds complicated but it's actually simplier to just look at the usage.
+
+> Note that the [typeof]() function has a very robust signature, this is example is using [auto currying]() to create a predicate function on the fly
 
 ```
 match "match is just a function" {
-  (type_of int): stdout "its an integer",
-  (type_of str): stdout "its a str"
+  (typeof int): stdout "its an integer",
+  (typeof str): stdout "its a str"
 }
 ```
 
+
 ## Sugary goodness
 
-Given the "line of sight" initiative, _lang_ ships with a bunch of functions to
-make reading and expressing conditions easier
+Given the "line of sight" initiative, _lang_ ships with a bunch of functions to make reading and conditions easier
 
 ### unless
 
@@ -187,8 +214,9 @@ unless cond
 All of these mean the same thing, "both are equal"
 
 ```
-a == b  // both are equal
-a is b  // both are equal
+a == b
+a is b
+a equal b
 ```
 
 ### non-equality functions
@@ -196,8 +224,10 @@ a is b  // both are equal
 All of these mean the same thing, "both are not equal"
 
 ```
-a != b    // both are not equal
-a isnt b  // both are not equal
+a /= b
+a <> b
+a isnt b
+a not_equal b
 ```
 
 ### negation
